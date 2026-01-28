@@ -31,6 +31,16 @@ public class MatriculaService {
     private final CursoRepository cursoRepository;
 
     /**
+     * Lista todas as matrículas.
+     */
+    public List<MatriculaDTO> listarTodas() {
+        log.info("Listando todas as matrículas");
+        return matriculaRepository.findAll().stream()
+                .map(MatriculaDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Realiza matrícula de um aluno em um curso.
      */
     @Transactional

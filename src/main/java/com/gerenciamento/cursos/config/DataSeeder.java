@@ -2,14 +2,18 @@ package com.gerenciamento.cursos.config;
 
 import com.gerenciamento.cursos.model.Aluno;
 import com.gerenciamento.cursos.model.Curso;
+import com.gerenciamento.cursos.model.Matricula;
 import com.gerenciamento.cursos.model.Usuario;
 import com.gerenciamento.cursos.repository.AlunoRepository;
 import com.gerenciamento.cursos.repository.CursoRepository;
+import com.gerenciamento.cursos.repository.MatriculaRepository;
 import com.gerenciamento.cursos.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * Classe para popular o banco de dados com dados iniciais para testes.
@@ -22,6 +26,7 @@ public class DataSeeder implements CommandLineRunner {
     private final UsuarioRepository usuarioRepository;
     private final AlunoRepository alunoRepository;
     private final CursoRepository cursoRepository;
+    private final MatriculaRepository matriculaRepository;
 
     @Override
     public void run(String... args) {
@@ -128,9 +133,60 @@ public class DataSeeder implements CommandLineRunner {
             cursoRepository.save(curso5);
             
             log.info("Cursos criados: {}", cursoRepository.count());
+            
+            // Criar Matrículas de exemplo
+            List<Aluno> todosAlunos = alunoRepository.findAll();
+            List<Curso> todosCursos = cursoRepository.findAll();
+            
+            // Matricular primeiros 5 alunos em cursos variados
+            if (!todosAlunos.isEmpty() && !todosCursos.isEmpty()) {
+                // Aluno 1 - 3 cursos (progresso variado)
+                criarMatricula(todosAlunos.get(0), todosCursos.get(0), 75.0, Matricula.StatusMatricula.ATIVA);
+                criarMatricula(todosAlunos.get(0), todosCursos.get(1), 100.0, Matricula.StatusMatricula.CONCLUIDA);
+                criarMatricula(todosAlunos.get(0), todosCursos.get(3), 30.0, Matricula.StatusMatricula.ATIVA);
+                
+                // Aluno 2 - 2 cursos
+                criarMatricula(todosAlunos.get(1), todosCursos.get(0), 50.0, Matricula.StatusMatricula.ATIVA);
+                criarMatricula(todosAlunos.get(1), todosCursos.get(2), 20.0, Matricula.StatusMatricula.ATIVA);
+                
+                // Aluno 3 - 1 curso concluído
+                criarMatricula(todosAlunos.get(2), todosCursos.get(1), 100.0, Matricula.StatusMatricula.CONCLUIDA);
+                
+                // Aluno 4 - 2 cursos
+                criarMatricula(todosAlunos.get(3), todosCursos.get(2), 85.0, Matricula.StatusMatricula.ATIVA);
+                criarMatricula(todosAlunos.get(3), todosCursos.get(4), 45.0, Matricula.StatusMatricula.ATIVA);
+                
+                // Aluno 5 - 1 curso cancelado e 1 ativo
+                criarMatricula(todosAlunos.get(4), todosCursos.get(0), 10.0, Matricula.StatusMatricula.CANCELADA);
+                criarMatricula(todosAlunos.get(4), todosCursos.get(3), 60.0, Matricula.StatusMatricula.ATIVA);
+                
+                // Aluno 6 - 3 cursos
+                criarMatricula(todosAlunos.get(5), todosCursos.get(1), 40.0, Matricula.StatusMatricula.ATIVA);
+                criarMatricula(todosAlunos.get(5), todosCursos.get(2), 90.0, Matricula.StatusMatricula.ATIVA);
+                criarMatricula(todosAlunos.get(5), todosCursos.get(4), 15.0, Matricula.StatusMatricula.ATIVA);
+                
+                log.info("Matrículas criadas: {}", matriculaRepository.count());
+            }
+            
             log.info("Dados iniciais carregados com sucesso!");
         } else {
             log.info("Banco de dados já possui dados. Pulando seed...");
         }
+    }
+    
+    private void criarMatricula(Aluno aluno, Curso curso, Double progresso, Matricula.StatusMatricula status) {
+        Matricula matricula = new Matricula();
+        matricula.setAluno(aluno);
+        matricula.setCurso(curso);
+        matricula.setProgresso(progresso);
+        matricula.setStatus(status);
+        
+        // Ajustar vagas disponíveis apenas para matrículas ativas
+        if (status == Matricula.StatusMatricula.ATIVA || status == Matricula.StatusMatricula.CONCLUIDA) {
+            curso.decrementarVaga();
+            cursoRepository.save(curso);
+        }
+        
+        matriculaRepository.save(matricula);
     }
 }

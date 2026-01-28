@@ -26,7 +26,12 @@ function showSection(sectionId) {
         link.classList.remove('active');
     });
     document.getElementById(sectionId).classList.add('active');
-    event.target.classList.add('active');
+    
+    // Ativar o link do menu correspondente
+    const activeLink = document.querySelector(`.nav-menu a[onclick*="${sectionId}"]`);
+    if (activeLink) {
+        activeLink.classList.add('active');
+    }
 
     // Carregar dados da seção
     if (sectionId === 'cursos') loadCursos();
@@ -100,7 +105,6 @@ function populateAlunoSelect() {
     }));
     
     alunosOptions.forEach(opt => {
-    populateProfessorSelect();
         const option = document.createElement('option');
         option.value = opt.value;
         option.textContent = opt.text;
@@ -242,8 +246,8 @@ async function deleteCurso(id) {
 async function loadAlunos() {
     try {
         const response = await fetch(`${API_URL}/alunos`);
-        alunosCache = alunos;
         const alunos = await response.json();
+        alunosCache = alunos;
         const tbody = document.getElementById('alunosTableBody');
         
         if (alunos.length === 0) {
@@ -295,15 +299,6 @@ function showAlunoModal(aluno = null) {
     modal.classList.add('active');
 }
 
-    // Popular selects
-    populateAlunoSelect();
-    populateCursoSelect();
-    
-    // Limpar campos de busca
-    document.getElementById('matriculaAlunoSearch').value = '';
-    document.getElementById('matriculaCursoSearch').value = '';
-    
-    
 async function editAluno(id) {
     try {
         const response = await fetch(`${API_URL}/alunos/${id}`);
@@ -392,6 +387,11 @@ function showMatriculaModal() {
     const modal = document.getElementById('matriculaModal');
     const form = document.getElementById('matriculaForm');
     form.reset();
+    
+    // Popular selects
+    populateAlunoSelect();
+    populateCursoSelect();
+    
     modal.classList.add('active');
 }
 
@@ -466,36 +466,16 @@ function setupForms() {
     });
     
     updateFiltroMatriculas();
-}
-
-async function updateFiltroMatriculas() {
-    const filtroTipo = document.getElementById('filtroTipo').value;
-    const filtroId = document.getElementById('filtroId');
     
-    if (filtroTipo === 'todas') {
-        filtroId.style.display = 'none';
-        filtroId.value = '';
-        loadMatriculas();
-    } else {
-        filtroId.style.display = 'block';
-        filtroId.innerHTML = '<option value="">Selecione...</option>';
+    // Aluno Form
+    document.getElementById('alunoForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
         
-        if (filtroTipo === 'aluno') {
-            alunosCache.forEach(aluno => {
-                const option = document.createElement('option');
-                option.value = aluno.id;
-                option.textContent = `${aluno.nome} (${aluno.email})`;
-                filtroId.appendChild(option);
-            });
-        } else if (filtroTipo === 'curso') {
-            cursosCache.forEach(curso => {
-                const option = document.createElement('option');
-                option.value = curso.id;
-                option.textContent = curso.nome;
-                filtroId.appendChild(option);
-            });
-        }
-    }     cpf: document.getElementById('alunoCpf').value.replace(/\D/g, ''),
+        const id = document.getElementById('alunoId').value;
+        const data = {
+            nome: document.getElementById('alunoNome').value,
+            email: document.getElementById('alunoEmail').value,
+            cpf: document.getElementById('alunoCpf').value.replace(/\D/g, ''),
             telefone: document.getElementById('alunoTelefone').value
         };
         
@@ -581,6 +561,40 @@ async function updateFiltroMatriculas() {
     document.getElementById('progressoValor').addEventListener('input', (e) => {
         document.getElementById('progressoSlider').value = e.target.value;
     });
+    
+    document.getElementById('progressoSlider').addEventListener('input', (e) => {
+        document.getElementById('progressoValor').value = e.target.value;
+    });
+}
+
+async function updateFiltroMatriculas() {
+    const filtroTipo = document.getElementById('filtroTipo').value;
+    const filtroId = document.getElementById('filtroId');
+    
+    if (filtroTipo === 'todas') {
+        filtroId.style.display = 'none';
+        filtroId.value = '';
+        loadMatriculas();
+    } else {
+        filtroId.style.display = 'block';
+        filtroId.innerHTML = '<option value="">Selecione...</option>';
+        
+        if (filtroTipo === 'aluno') {
+            alunosCache.forEach(aluno => {
+                const option = document.createElement('option');
+                option.value = aluno.id;
+                option.textContent = `${aluno.nome} (${aluno.email})`;
+                filtroId.appendChild(option);
+            });
+        } else if (filtroTipo === 'curso') {
+            cursosCache.forEach(curso => {
+                const option = document.createElement('option');
+                option.value = curso.id;
+                option.textContent = curso.nome;
+                filtroId.appendChild(option);
+            });
+        }
+    }
 }
 
 // FILTERS

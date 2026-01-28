@@ -21,6 +21,16 @@ public class MatriculaController {
     private final MatriculaService matriculaService;
 
     /**
+     * Lista todas as matrículas.
+     * GET /api/matriculas
+     */
+    @GetMapping
+    public ResponseEntity<List<MatriculaDTO>> listarTodas() {
+        List<MatriculaDTO> matriculas = matriculaService.listarTodas();
+        return ResponseEntity.ok(matriculas);
+    }
+
+    /**
      * Realiza matrícula de um aluno em um curso.
      * POST /api/matriculas
      * Body: { "alunoId": 1, "cursoId": 1 }

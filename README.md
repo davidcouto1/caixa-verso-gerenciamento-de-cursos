@@ -209,6 +209,21 @@ mvn spring-boot:run
   - Username: `sa`
   - Password: *(deixe em branco)*
 
+### 🎲 Dados de Exemplo (Seed)
+
+O sistema **cria automaticamente dados de exemplo** ao iniciar pela primeira vez, facilitando a demonstração:
+
+**Dados criados:**
+- ✅ **3 Professores:** João Silva, Maria Santos, Carlos Oliveira
+- ✅ **9 Alunos:** Com nomes, emails, CPFs e telefones
+- ✅ **5 Cursos:** Arquitetura de Software, Spring Boot, Banco de Dados, Metodologias Ágeis, DevOps
+- ✅ **13 Matrículas:** Com status variados (ativa, concluída, cancelada) e diferentes progressos
+
+**Vantagens:**
+- Não precisa cadastrar dados manualmente
+- Sistema pronto para demonstração imediata
+- Testa todas as funcionalidades com dados reais
+
 ### Interface Web
 
 O sistema possui uma **interface web completa** para gerenciamento visual:
