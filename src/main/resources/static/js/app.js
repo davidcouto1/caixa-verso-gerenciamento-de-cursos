@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDashboard();
     loadCursos();
     loadAlunos();
+    loadProfessoresTabela();
     setupForms();
     setupFilters();
     loadProfessores();
@@ -36,6 +37,7 @@ function showSection(sectionId) {
     // Carregar dados da seção
     if (sectionId === 'cursos') loadCursos();
     if (sectionId === 'alunos') loadAlunos();
+    if (sectionId === 'professores') loadProfessoresTabela();
     if (sectionId === 'matriculas') loadMatriculas();
     if (sectionId === 'dashboard') loadDashboard();
 }
@@ -72,12 +74,95 @@ async function loadProfessores() {
         const professores = await response.json();
         professoresCache = professores;
     } catch (error) {
+        professoresCache = [];
+    }
+}
+
+async function loadProfessoresTabela() {
+    try {
+        const response = await fetch(`${API_URL}/usuarios/professores`);
+        const professores = await response.json();
+        professoresCache = professores;
+        const tbody = document.getElementById('professoresTableBody');
+        
+        if (professores.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="loading">Nenhum professor cadastrado</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = professores.map(professor => `
+            <tr>
+                <td>${professor.id}</td>
+                <td><strong>${professor.nome}</strong></td>
+                <td>${professor.email}</td>
+                <td><span class="badge ${professor.ativo ? 'badge-success' : 'badge-danger'}">${professor.ativo ? 'Ativo' : 'Inativo'}</span></td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn btn-warning" onclick="editProfessor(${professor.id})">Editar</button>
+                        <button class="btn btn-danger" onclick="deleteProfessor(${professor.id})">Excluir</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
         console.error('Erro ao carregar professores:', error);
-        // Se não houver professores, criar alguns de exemplo
-        professoresCache = [
-            { id: 1, nome: 'Professor 1', tipo: 'PROFESSOR' },
-            { id: 2, nome: 'Professor 2', tipo: 'PROFESSOR' },
-            { id: 3, nome: 'Professor 3', tipo: 'PROFESSOR' }
+        showMessage('Erro ao carregar professores', 'error');
+    }
+}
+
+function showProfessorModal(professor = null) {
+    const modal = document.getElementById('professorModal');
+    const form = document.getElementById('professorForm');
+    const title = document.getElementById('professorModalTitle');
+    
+    form.reset();
+    
+    if (professor) {
+        title.textContent = 'Editar Professor';
+        document.getElementById('professorId').value = professor.id;
+        document.getElementById('professorNome').value = professor.nome;
+        document.getElementById('professorEmail').value = professor.email;
+        document.getElementById('professorSenha').required = false;
+        document.getElementById('professorSenha').placeholder = 'Deixe em branco para manter a senha atual';
+    } else {
+        title.textContent = 'Novo Professor';
+        document.getElementById('professorId').value = '';
+        document.getElementById('professorSenha').required = true;
+        document.getElementById('professorSenha').placeholder = '';
+    }
+    
+    modal.classList.add('active');
+}
+
+async function editProfessor(id) {
+    try {
+        const response = await fetch(`${API_URL}/usuarios/${id}`);
+        const professor = await response.json();
+        showProfessorModal(professor);
+    } catch (error) {
+        console.error('Erro ao buscar professor:', error);
+        showMessage('Erro ao buscar professor', 'error');
+    }
+}
+
+async function deleteProfessor(id) {
+    if (!confirm('Deseja realmente excluir este professor?')) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/usuarios/${id}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            showMessage('Professor excluído com sucesso!', 'success');
+            loadProfessoresTabela();
+            loadProfessores();
+        } else {
+            throw new Error('Erro ao excluir professor');
+        }
+    } catch (error) {
+        console.error('Erro ao excluir professor:', error);
+        showMessage('Erro ao excluir professor', 'error')   { id: 3, nome: 'Professor 3', tipo: 'PROFESSOR' }
         ];
     }
 }
@@ -420,7 +505,45 @@ async function cancelarMatricula(id) {
             throw new Error(error.message || 'Erro ao cancelar matrícula');
         }
     } catch (error) {
-        console.error('Erro ao cancelar matrícula:', error);
+       Professor Form
+    document.getElementById('professorForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const id = document.getElementById('professorId').value;
+        const data = {
+            nome: document.getElementById('professorNome').value,
+            email: document.getElementById('professorEmail').value,
+            senha: document.getElementById('professorSenha').value,
+            tipo: 'PROFESSOR',
+            ativo: true
+        };
+        
+        try {
+            const url = id ? `${API_URL}/usuarios/${id}` : `${API_URL}/usuarios`;
+            const method = id ? 'PUT' : 'POST';
+            
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            if (response.ok) {
+                showMessage(`Professor ${id ? 'atualizado' : 'criado'} com sucesso!`, 'success');
+                closeModal('professorModal');
+                loadProfessoresTabela();
+                loadProfessores();
+            } else {
+                const error = await response.json();
+                throw new Error(error.message || 'Erro ao salvar professor');
+            }
+        } catch (error) {
+            console.error('Erro ao salvar professor:', error);
+            showMessage(error.message, 'error');
+        }
+    });
+    
+    //  console.error('Erro ao cancelar matrícula:', error);
         showMessage(error.message, 'error');
     }
 }
