@@ -24,6 +24,7 @@ public class CursoDTO {
     private Integer vagasDisponiveis;
     private Boolean ativo;
     private Long professorId;
+    private String professorNome;
     private LocalDateTime dataCriacao;
     private Integer totalMatriculas;
 
@@ -40,6 +41,7 @@ public class CursoDTO {
         dto.setVagasDisponiveis(curso.getVagasDisponiveis());
         dto.setAtivo(curso.getAtivo());
         dto.setProfessorId(curso.getProfessor() != null ? curso.getProfessor().getId() : null);
+        dto.setProfessorNome(curso.getProfessor() != null ? curso.getProfessor().getNome() : null);
         dto.setDataCriacao(curso.getDataCriacao());
         dto.setTotalMatriculas(curso.getMatriculas() != null ? curso.getMatriculas().size() : 0);
         return dto;

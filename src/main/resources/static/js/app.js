@@ -331,7 +331,7 @@ async function loadCursos() {
         const tbody = document.getElementById('cursosTableBody');
         
         if (cursos.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="loading">Nenhum curso cadastrado</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="loading">Nenhum curso cadastrado</td></tr>';
             return;
         }
 
@@ -339,6 +339,7 @@ async function loadCursos() {
             <tr>
                 <td>${curso.id}</td>
                 <td><strong>${curso.nome}</strong></td>
+                <td>${curso.professorNome || 'Não informado'}</td>
                 <td>${curso.cargaHoraria}h</td>
                 <td>${curso.vagas}</td>
                 <td>${curso.vagasDisponiveis}</td>
