@@ -74,13 +74,13 @@ public class DataSeeder implements CommandLineRunner {
             log.info("Professores criados: {}", usuarioRepository.count());
             
             // Criar Usuário Aluno Padrão (apenas para testes)
-            Usuario aluno = new Usuario();
-            aluno.setNome("Aluno Teste");
-            aluno.setEmail("aluno@escola.com");
-            aluno.setSenha(passwordEncoder.encode("aluno123"));
-            aluno.setTipo(Usuario.TipoUsuario.ALUNO);
-            aluno.setAtivo(true);
-            usuarioRepository.save(aluno);
+            Usuario usuarioAluno = new Usuario();
+            usuarioAluno.setNome("Aluno Teste");
+            usuarioAluno.setEmail("aluno@escola.com");
+            usuarioAluno.setSenha(passwordEncoder.encode("aluno123"));
+            usuarioAluno.setTipo(Usuario.TipoUsuario.ALUNO);
+            usuarioAluno.setAtivo(true);
+            usuarioRepository.save(usuarioAluno);
             log.info("Usuário aluno criado: aluno@escola.com / aluno123");
             
             // Criar Alunos de exemplo
