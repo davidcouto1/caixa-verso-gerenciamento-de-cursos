@@ -49,21 +49,21 @@ public class DataSeeder implements CommandLineRunner {
             Usuario prof1 = new Usuario();
             prof1.setNome("Prof. João Silva");
             prof1.setEmail("joao.silva@escola.com");
-            prof1.setSenha(passwordEncoder.encode("senha123"));
+            prof1.setSenha(passwordEncoder.encode("prof123"));
             prof1.setTipo(Usuario.TipoUsuario.PROFESSOR);
             prof1.setAtivo(true);
             
             Usuario prof2 = new Usuario();
             prof2.setNome("Profa. Maria Santos");
             prof2.setEmail("maria.santos@escola.com");
-            prof2.setSenha(passwordEncoder.encode("senha123"));
+            prof2.setSenha(passwordEncoder.encode("prof123"));
             prof2.setTipo(Usuario.TipoUsuario.PROFESSOR);
             prof2.setAtivo(true);
             
             Usuario prof3 = new Usuario();
             prof3.setNome("Prof. Carlos Oliveira");
             prof3.setEmail("carlos.oliveira@escola.com");
-            prof3.setSenha(passwordEncoder.encode("senha123"));
+            prof3.setSenha(passwordEncoder.encode("prof123"));
             prof3.setTipo(Usuario.TipoUsuario.PROFESSOR);
             prof3.setAtivo(true);
             
@@ -72,6 +72,16 @@ public class DataSeeder implements CommandLineRunner {
             usuarioRepository.save(prof3);
             
             log.info("Professores criados: {}", usuarioRepository.count());
+            
+            // Criar Usuário Aluno Padrão (apenas para testes)
+            Usuario aluno = new Usuario();
+            aluno.setNome("Aluno Teste");
+            aluno.setEmail("aluno@escola.com");
+            aluno.setSenha(passwordEncoder.encode("aluno123"));
+            aluno.setTipo(Usuario.TipoUsuario.ALUNO);
+            aluno.setAtivo(true);
+            usuarioRepository.save(aluno);
+            log.info("Usuário aluno criado: aluno@escola.com / aluno123");
             
             // Criar Alunos de exemplo
             String[] nomesAlunos = {
