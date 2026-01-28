@@ -171,16 +171,16 @@
         <form id="loginForm" action="/api/auth/login" method="POST">
             <div class="form-group">
                 <label for="username">Email</label>
-                <input type="email" id="username" name="username" required autofocus placeholder="seu.email@escola.com">
+                <input type="email" id="username" name="username" required autofocus placeholder="seu.email@escola.com" autocomplete="username">
             </div>
 
             <div class="form-group">
                 <label for="password">Senha</label>
-                <input type="password" id="password" name="password" required placeholder="Digite sua senha">
+                <input type="password" id="password" name="password" required placeholder="Digite sua senha" autocomplete="current-password">
             </div>
 
-            <button type="submit" class="btn" id="loginBtn">
-                <span id="btnText">Entrar</span>
+            <button type="submit" class="btn">
+                Entrar
             </button>
         </form>
 

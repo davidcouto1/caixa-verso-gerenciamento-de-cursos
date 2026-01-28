@@ -41,11 +41,12 @@ public class SecurityConfig {
                 .loginPage("/login.html")
                 .loginProcessingUrl("/api/auth/login")
                 .defaultSuccessUrl("/index.html", true)
+                .failureUrl("/login.html?error=true")
                 .permitAll()
             )
             .logout(logout -> logout
                 .logoutUrl("/api/auth/logout")
-                .logoutSuccessUrl("/login.html")
+                .logoutSuccessUrl("/login.html?logout=true")
                 .permitAll()
             )
             .headers(headers -> headers.frameOptions(frame -> frame.disable())); // Para H2 Console
