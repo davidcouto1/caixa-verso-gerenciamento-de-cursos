@@ -18,6 +18,11 @@ Desenvolver um sistema web que permita:
 - **Administradores:** gerenciar usuários e gerar relatórios
 - **Sistema:** controlar vagas, validar inscrições e calcular progresso automaticamente
 
+**O projeto inclui:**
+- 🔧 **Backend:** API REST com Spring Boot
+- 🎨 **Frontend:** Interface web moderna em HTML/CSS/JavaScript
+- 💾 **Banco de Dados:** H2 em memória (desenvolvimento/testes)
+
 ## 3. Estilo Arquitetural Adotado
 
 ### Arquitetura Monolítica em Camadas (Layered Architecture)
@@ -197,11 +202,36 @@ mvn spring-boot:run
 ```
 
 4. **Acesse a aplicação:**
-- API Base URL: `http://localhost:8080`
-- Console H2: `http://localhost:8080/h2-console`
+- **Interface Web:** `http://localhost:8080` ⭐
+- **API REST:** `http://localhost:8080/api`
+- **Console H2:** `http://localhost:8080/h2-console`
   - JDBC URL: `jdbc:h2:mem:gerenciamento_cursos`
   - Username: `sa`
   - Password: *(deixe em branco)*
+
+### Interface Web
+
+O sistema possui uma **interface web completa** para gerenciamento visual:
+
+**Funcionalidades:**
+- 📊 **Dashboard:** Estatísticas em tempo real (total de cursos, alunos, matrículas)
+- 📚 **Gerenciamento de Cursos:** Criar, editar, excluir e visualizar cursos
+- 👥 **Gerenciamento de Alunos:** CRUD completo de alunos
+- 📝 **Gerenciamento de Matrículas:** Matricular alunos, atualizar progresso, cancelar matrículas
+- 🎯 **Filtros e Buscas:** Filtrar matrículas por aluno ou curso
+- 📱 **Design Responsivo:** Funciona em desktop, tablet e mobile
+
+**Estrutura Frontend:**
+```
+src/main/resources/static/
+├── index.html          # Página principal
+├── css/
+│   └── style.css       # Estilos da aplicação
+└── js/
+    └── app.js          # Lógica e integração com API
+```
+
+**Acesse diretamente:** Após iniciar a aplicação, abra o navegador em `http://localhost:8080`
 
 ### Exemplos de Endpoints
 

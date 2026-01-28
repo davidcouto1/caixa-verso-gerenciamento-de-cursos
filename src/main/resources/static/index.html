@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gerenciamento de Cursos</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1 class="logo">📚 Gerenciamento de Cursos</h1>
+            <ul class="nav-menu">
+                <li><a href="#" onclick="showSection('dashboard')" class="active">Dashboard</a></li>
+                <li><a href="#" onclick="showSection('cursos')">Cursos</a></li>
+                <li><a href="#" onclick="showSection('alunos')">Alunos</a></li>
+                <li><a href="#" onclick="showSection('matriculas')">Matrículas</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section active">
+            <h2>Dashboard</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total de Cursos</h3>
+                    <p class="stat-number" id="totalCursos">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Total de Alunos</h3>
+                    <p class="stat-number" id="totalAlunos">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Total de Matrículas</h3>
+                    <p class="stat-number" id="totalMatriculas">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Cursos com Vagas</h3>
+                    <p class="stat-number" id="cursosComVagas">0</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cursos Section -->
+        <section id="cursos" class="section">
+            <div class="section-header">
+                <h2>Gerenciamento de Cursos</h2>
+                <button class="btn btn-primary" onclick="showCursoModal()">+ Novo Curso</button>
+            </div>
+            <div class="table-container">
+                <table id="cursosTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Carga Horária</th>
+                            <th>Vagas</th>
+                            <th>Disponíveis</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cursosTableBody">
+                        <tr>
+                            <td colspan="7" class="loading">Carregando...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Alunos Section -->
+        <section id="alunos" class="section">
+            <div class="section-header">
+                <h2>Gerenciamento de Alunos</h2>
+                <button class="btn btn-primary" onclick="showAlunoModal()">+ Novo Aluno</button>
+            </div>
+            <div class="table-container">
+                <table id="alunosTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>CPF</th>
+                            <th>Telefone</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="alunosTableBody">
+                        <tr>
+                            <td colspan="7" class="loading">Carregando...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Matrículas Section -->
+        <section id="matriculas" class="section">
+            <div class="section-header">
+                <h2>Gerenciamento de Matrículas</h2>
+                <button class="btn btn-primary" onclick="showMatriculaModal()">+ Nova Matrícula</button>
+            </div>
+            <div class="filters">
+                <select id="filtroTipo" onchange="loadMatriculas()">
+                    <option value="todas">Todas as Matrículas</option>
+                    <option value="aluno">Por Aluno</option>
+                    <option value="curso">Por Curso</option>
+                </select>
+                <input type="number" id="filtroId" placeholder="ID do Aluno/Curso" style="display:none;" onchange="loadMatriculas()">
+            </div>
+            <div class="table-container">
+                <table id="matriculasTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Aluno</th>
+                            <th>Curso</th>
+                            <th>Status</th>
+                            <th>Progresso</th>
+                            <th>Data Matrícula</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="matriculasTableBody">
+                        <tr>
+                            <td colspan="7" class="loading">Carregando...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Curso -->
+    <div id="cursoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('cursoModal')">&times;</span>
+            <h2 id="cursoModalTitle">Novo Curso</h2>
+            <form id="cursoForm">
+                <input type="hidden" id="cursoId">
+                <div class="form-group">
+                    <label for="cursoNome">Nome do Curso *</label>
+                    <input type="text" id="cursoNome" required>
+                </div>
+                <div class="form-group">
+                    <label for="cursoDescricao">Descrição</label>
+                    <textarea id="cursoDescricao" rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cursoCargaHoraria">Carga Horária *</label>
+                        <input type="number" id="cursoCargaHoraria" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cursoVagas">Vagas *</label>
+                        <input type="number" id="cursoVagas" min="1" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="cursoProfessorId">ID do Professor *</label>
+                    <input type="number" id="cursoProfessorId" min="1" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('cursoModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Aluno -->
+    <div id="alunoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('alunoModal')">&times;</span>
+            <h2 id="alunoModalTitle">Novo Aluno</h2>
+            <form id="alunoForm">
+                <input type="hidden" id="alunoId">
+                <div class="form-group">
+                    <label for="alunoNome">Nome Completo *</label>
+                    <input type="text" id="alunoNome" required>
+                </div>
+                <div class="form-group">
+                    <label for="alunoEmail">Email *</label>
+                    <input type="email" id="alunoEmail" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="alunoCpf">CPF *</label>
+                        <input type="text" id="alunoCpf" maxlength="11" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="alunoTelefone">Telefone</label>
+                        <input type="text" id="alunoTelefone" maxlength="15">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('alunoModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Matrícula -->
+    <div id="matriculaModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('matriculaModal')">&times;</span>
+            <h2>Nova Matrícula</h2>
+            <form id="matriculaForm">
+                <div class="form-group">
+                    <label for="matriculaAlunoId">ID do Aluno *</label>
+                    <input type="number" id="matriculaAlunoId" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="matriculaCursoId">ID do Curso *</label>
+                    <input type="number" id="matriculaCursoId" min="1" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('matriculaModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Matricular</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Progresso -->
+    <div id="progressoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('progressoModal')">&times;</span>
+            <h2>Atualizar Progresso</h2>
+            <form id="progressoForm">
+                <input type="hidden" id="progressoMatriculaId">
+                <div class="form-group">
+                    <label for="progressoValor">Progresso (%)</label>
+                    <input type="number" id="progressoValor" min="0" max="100" required>
+                    <input type="range" id="progressoSlider" min="0" max="100" oninput="document.getElementById('progressoValor').value = this.value">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('progressoModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Atualizar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
