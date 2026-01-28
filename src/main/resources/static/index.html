@@ -53,7 +53,7 @@
         <section id="cursos" class="section">
             <div class="section-header">
                 <h2>Gerenciamento de Cursos</h2>
-                <button class="btn btn-primary" onclick="showCursoModal()">+ Novo Curso</button>
+                <button class="btn btn-primary" id="btnNovoCurso" onclick="showCursoModal()" style="display:none;">+ Novo Curso</button>
             </div>
             <div class="table-container">
                 <table id="cursosTable">
@@ -81,7 +81,7 @@
         <section id="alunos" class="section">
             <div class="section-header">
                 <h2>Gerenciamento de Alunos</h2>
-                <button class="btn btn-primary" onclick="showAlunoModal()">+ Novo Aluno</button>
+                <button class="btn btn-primary" id="btnNovoAluno" onclick="showAlunoModal()" style="display:none;">+ Novo Aluno</button>
             </div>
             <div class="table-container">
                 <table id="alunosTable">
@@ -109,7 +109,7 @@
         <section id="professores" class="section">
             <div class="section-header">
                 <h2>Gerenciamento de Professores</h2>
-                <button class="btn btn-primary" onclick="showProfessorModal()">+ Novo Professor</button>
+                <button class="btn btn-primary" id="btnNovoProfessor" onclick="showProfessorModal()" style="display:none;">+ Novo Professor</button>
             </div>
             <div class="table-container">
                 <table id="professoresTable">
@@ -135,7 +135,7 @@
         <section id="matriculas" class="section">
             <div class="section-header">
                 <h2>Gerenciamento de Matrículas</h2>
-                <button class="btn btn-primary" onclick="showMatriculaModal()">+ Nova Matrícula</button>
+                <button class="btn btn-primary" id="btnNovaMatricula" onclick="showMatriculaModal()" style="display:none;">+ Nova Matrícula</button>
             </div>
             <div class="filters">
                 <select id="filtroTipo" onchange="updateFiltroMatriculas()">

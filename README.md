@@ -209,23 +209,35 @@ mvn spring-boot:run
   - Username: `sa`
   - Password: *(deixe em branco)*
 
-### 🔐 Autenticação e Acesso
+### 🔐 Autenticação e Controle de Acesso
 
-O sistema possui **controle de acesso** implementado com Spring Security. É necessário fazer login para acessar as funcionalidades.
+O sistema implementa **controle de acesso baseado em perfis** (RBAC) com Spring Security. Autenticação obrigatória para acessar as funcionalidades.
 
 **Credenciais de Teste:**
 
-| Perfil | Email | Senha | Permissões |
-|--------|-------|-------|------------|
-| **Administrador** | `admin@escola.com` | `admin123` | Acesso total ao sistema |
-| **Professor** | `joao.silva@escola.com` | `prof123` | Gerenciar cursos e matrículas |
-| **Aluno** | `aluno@escola.com` | `aluno123` | Visualizar cursos e suas matrículas |
+| Perfil | Email | Senha |
+|--------|-------|-------|
+| **Administrador** | `admin@escola.com` | `admin123` |
+| **Professor** | `joao.silva@escola.com` | `prof123` |
+| **Aluno** | `aluno@escola.com` | `aluno123` |
 
-> **⚠️ Importante:** Estes usuários padrão são criados automaticamente apenas para **fins de teste e demonstração**. Em ambiente de produção, essas credenciais devem ser alteradas e as senhas devem ser fortes e seguras. A existência desses usuários padrão **não compromete a segurança do sistema** em ambiente de desenvolvimento, pois:
-> - O banco de dados H2 é em memória e reiniciado a cada execução
-> - A aplicação é destinada a ambiente acadêmico/testes
-> - O Spring Security está configurado corretamente com criptografia BCrypt
-> - Em produção, esse seed de dados seria desabilitado
+**Matriz de Permissões:**
+
+| Recurso | ADMIN | PROFESSOR | ALUNO |
+|---------|-------|-----------|-------|
+| **Dashboard** | ✅ Ver estatísticas | ✅ Ver estatísticas | ✅ Ver estatísticas |
+| **Cursos** | ✅ CRUD completo | ✅ CRUD completo | 👁️ Apenas visualizar |
+| **Alunos** | ✅ CRUD completo | ✅ CRUD completo | ❌ Sem acesso |
+| **Professores** | ✅ CRUD completo | ❌ Sem acesso | ❌ Sem acesso |
+| **Matrículas** | ✅ CRUD completo | ✅ CRUD completo | 👁️ Apenas visualizar |
+
+**Segurança Implementada:**
+- ✅ Backend: Endpoints protegidos por perfil (Spring Security)
+- ✅ Frontend: Interface adapta-se ao perfil do usuário
+- ✅ Senhas criptografadas com BCrypt
+- ✅ Sessões autenticadas via Spring Security
+
+> **⚠️ Nota:** Credenciais de teste para ambiente de desenvolvimento. Em produção, usar senhas fortes e desabilitar seed de dados.
 
 ### 🎲 Dados de Exemplo (Seed)
 

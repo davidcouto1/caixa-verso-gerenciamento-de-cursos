@@ -6,18 +6,87 @@ let alunosCache = [];
 let cursosCache = [];
 let alunosOptions = [];
 let cursosOptions = [];
+let currentUser = null; // Informações do usuário logado
 
-// Verificação de autenticação
+// Verificação de autenticação e carregamento de usuário
 async function checkAuthentication() {
     try {
         const response = await fetch(`${API_URL}/auth/me`);
         if (!response.ok) {
             window.location.href = '/login.html';
+            return;
         }
+        
+        currentUser = await response.json();
+        console.log('Usuário logado:', currentUser);
+        
+        // Configura menus baseado no perfil
+        setupMenusByRole();
+        
     } catch (error) {
         console.error('Erro ao verificar autenticação:', error);
         window.location.href = '/login.html';
     }
+}
+
+// Configura visibilidade dos menus baseado no perfil
+function setupMenusByRole() {
+    const menuItems = {
+        'dashboard': ['ADMIN', 'PROFESSOR', 'ALUNO'],
+        'cursos': ['ADMIN', 'PROFESSOR', 'ALUNO'],
+        'alunos': ['ADMIN', 'PROFESSOR'],
+        'professores': ['ADMIN'],
+        'matriculas': ['ADMIN', 'PROFESSOR', 'ALUNO']
+    };
+    
+    const userRole = currentUser.tipo;
+    
+    // Oculta menus que o usuário não tem acesso
+    document.querySelectorAll('.nav-menu a').forEach(link => {
+        const onclick = link.getAttribute('onclick');
+        if (onclick) {
+            const match = onclick.match(/showSection\('(\w+)'\)/);
+            if (match) {
+                const section = match[1];
+                if (menuItems[section] && !menuItems[section].includes(userRole)) {
+                    link.style.display = 'none';
+                }
+            }
+        }
+    });
+    
+    // Adiciona nome do usuário no menu
+    const navMenu = document.querySelector('.nav-menu');
+    const userInfo = document.createElement('li');
+    userInfo.style.color = '#6b7280';
+    userInfo.style.fontSize = '0.875rem';
+    userInfo.innerHTML = `<span style="color: #4f46e5; font-weight: 500;">${currentUser.nome}</span> (${getRoleLabel(userRole)})`;
+    navMenu.insertBefore(userInfo, navMenu.lastElementChild);
+    
+    // Mostra botões de criação baseado nas permissões
+    if (hasPermission('ADMIN', 'PROFESSOR')) {
+        document.getElementById('btnNovoCurso').style.display = 'inline-block';
+        document.getElementById('btnNovoAluno').style.display = 'inline-block';
+        document.getElementById('btnNovaMatricula').style.display = 'inline-block';
+    }
+    
+    if (hasPermission('ADMIN')) {
+        document.getElementById('btnNovoProfessor').style.display = 'inline-block';
+    }
+}
+
+function getRoleLabel(role) {
+    const labels = {
+        'ADMIN': 'Administrador',
+        'PROFESSOR': 'Professor',
+        'ALUNO': 'Aluno'
+    };
+    return labels[role] || role;
+}
+
+// Verifica se usuário tem permissão
+function hasPermission(...roles) {
+    return currentUser && roles.includes(currentUser.tipo);
 }
 
 // Função de logout
@@ -126,10 +195,12 @@ async function loadProfessoresTabela() {
                 <td>${professor.email}</td>
                 <td><span class="badge ${professor.ativo ? 'badge-success' : 'badge-danger'}">${professor.ativo ? 'Ativo' : 'Inativo'}</span></td>
                 <td>
+                    ${hasPermission('ADMIN') ? `
                     <div class="action-buttons">
                         <button class="btn btn-warning" onclick="editProfessor(${professor.id})">Editar</button>
                         <button class="btn btn-danger" onclick="deleteProfessor(${professor.id})">Excluir</button>
                     </div>
+                    ` : '<span style="color: #6b7280;">Sem permissão</span>'}
                 </td>
             </tr>
         `).join('');
@@ -274,8 +345,10 @@ async function loadCursos() {
                 <td><span class="badge ${curso.ativo ? 'badge-success' : 'badge-danger'}">${curso.ativo ? 'Ativo' : 'Inativo'}</span></td>
                 <td>
                     <div class="action-buttons">
-                        <button class="btn btn-warning" onclick="editCurso(${curso.id})">Editar</button>
-                        <button class="btn btn-danger" onclick="deleteCurso(${curso.id})">Excluir</button>
+                        ${hasPermission('ADMIN', 'PROFESSOR') ? `
+                            <button class="btn btn-warning" onclick="editCurso(${curso.id})">Editar</button>
+                            <button class="btn btn-danger" onclick="deleteCurso(${curso.id})">Excluir</button>
+                        ` : '<span style="color: #6b7280; font-size: 0.875rem;">Visualização</span>'}
                     </div>
                 </td>
             </tr>
@@ -364,10 +437,12 @@ async function loadAlunos() {
                 <td>${aluno.telefone || '-'}</td>
                 <td><span class="badge ${aluno.ativo ? 'badge-success' : 'badge-danger'}">${aluno.ativo ? 'Ativo' : 'Inativo'}</span></td>
                 <td>
+                    ${hasPermission('ADMIN', 'PROFESSOR') ? `
                     <div class="action-buttons">
                         <button class="btn btn-warning" onclick="editAluno(${aluno.id})">Editar</button>
                         <button class="btn btn-danger" onclick="deleteAluno(${aluno.id})">Excluir</button>
                     </div>
+                    ` : '<span style="color: #6b7280;">Visualização</span>'}
                 </td>
             </tr>
         `).join('');
@@ -468,6 +543,7 @@ async function loadMatriculas() {
                 </td>
                 <td>${formatDate(matricula.dataMatricula)}</td>
                 <td>
+                    ${hasPermission('ADMIN', 'PROFESSOR') ? `
                     <div class="action-buttons">
                         ${matricula.status === 'ATIVA' ? `
                             <button class="btn btn-success" onclick="showProgressoModal(${matricula.id}, ${matricula.progresso})">Progresso</button>
@@ -477,6 +553,7 @@ async function loadMatriculas() {
                             <button class="btn btn-primary" onclick="reativarMatricula(${matricula.id})" title="Reativar esta matrícula">✨ Reativar</button>
                         ` : ''}
                     </div>
+                    ` : '<span style="color: #6b7280;">Visualização</span>'}
                 </td>
             </tr>
         `).join('');
