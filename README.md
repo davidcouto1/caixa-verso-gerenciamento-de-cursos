@@ -25,7 +25,7 @@ Desenvolver um sistema web que permita:
 
 ## 3. Estilo Arquitetural Adotado
 
-### Arquitetura Monolítica em Camadas (Layered Architecture)
+### Arquitetura Monolítica em Camadas
 
 O sistema utiliza o padrão **MVC (Model-View-Controller)** organizado em camadas bem definidas.
 
