@@ -209,6 +209,27 @@ mvn spring-boot:run
   - Username: `sa`
   - Password: *(deixe em branco)*
 
+### 🔐 Autenticação e Acesso
+
+O sistema possui **controle de acesso** implementado com Spring Security. É necessário fazer login para acessar as funcionalidades.
+
+**Credenciais de Teste (Administrador):**
+```
+Email: admin@escola.com
+Senha: admin123
+```
+
+> **⚠️ Importante:** Este usuário administrador padrão é criado automaticamente apenas para **fins de teste e demonstração**. Em ambiente de produção, essas credenciais devem ser alteradas e a senha deve ser forte e segura. A existência desse usuário padrão **não compromete a segurança do sistema** em ambiente de desenvolvimento, pois:
+> - O banco de dados H2 é em memória e reiniciado a cada execução
+> - A aplicação é destinada a ambiente acadêmico/testes
+> - O Spring Security está configurado corretamente com criptografia BCrypt
+> - Em produção, esse seed de dados seria desabilitado
+
+**Perfis de Usuário:**
+- **ADMIN:** Acesso total ao sistema
+- **PROFESSOR:** Gerenciar cursos e visualizar matrículas
+- **ALUNO:** Visualizar cursos e suas próprias matrículas
+
 ### 🎲 Dados de Exemplo (Seed)
 
 O sistema **cria automaticamente dados de exemplo** ao iniciar pela primeira vez, facilitando a demonstração:

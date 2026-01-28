@@ -11,6 +11,7 @@ import com.gerenciamento.cursos.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -27,31 +28,42 @@ public class DataSeeder implements CommandLineRunner {
     private final AlunoRepository alunoRepository;
     private final CursoRepository cursoRepository;
     private final MatriculaRepository matriculaRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) {
         if (usuarioRepository.count() == 0) {
             log.info("Populando banco de dados com dados iniciais...");
             
+            // Criar Usuário Administrador Padrão (apenas para testes)
+            Usuario admin = new Usuario();
+            admin.setNome("Administrador");
+            admin.setEmail("admin@escola.com");
+            admin.setSenha(passwordEncoder.encode("admin123"));
+            admin.setTipo(Usuario.TipoUsuario.ADMIN);
+            admin.setAtivo(true);
+            usuarioRepository.save(admin);
+            log.info("Usuário admin criado: admin@escola.com / admin123");
+            
             // Criar Professores
             Usuario prof1 = new Usuario();
             prof1.setNome("Prof. João Silva");
             prof1.setEmail("joao.silva@escola.com");
-            prof1.setSenha("senha123");
+            prof1.setSenha(passwordEncoder.encode("senha123"));
             prof1.setTipo(Usuario.TipoUsuario.PROFESSOR);
             prof1.setAtivo(true);
             
             Usuario prof2 = new Usuario();
             prof2.setNome("Profa. Maria Santos");
             prof2.setEmail("maria.santos@escola.com");
-            prof2.setSenha("senha123");
+            prof2.setSenha(passwordEncoder.encode("senha123"));
             prof2.setTipo(Usuario.TipoUsuario.PROFESSOR);
             prof2.setAtivo(true);
             
             Usuario prof3 = new Usuario();
             prof3.setNome("Prof. Carlos Oliveira");
             prof3.setEmail("carlos.oliveira@escola.com");
-            prof3.setSenha("senha123");
+            prof3.setSenha(passwordEncoder.encode("senha123"));
             prof3.setTipo(Usuario.TipoUsuario.PROFESSOR);
             prof3.setAtivo(true);
             

@@ -7,8 +7,35 @@ let cursosCache = [];
 let alunosOptions = [];
 let cursosOptions = [];
 
+// Verificação de autenticação
+async function checkAuthentication() {
+    try {
+        const response = await fetch(`${API_URL}/auth/me`);
+        if (!response.ok) {
+            window.location.href = '/login.html';
+        }
+    } catch (error) {
+        console.error('Erro ao verificar autenticação:', error);
+        window.location.href = '/login.html';
+    }
+}
+
+// Função de logout
+async function logout() {
+    if (!confirm('Deseja realmente sair do sistema?')) return;
+    
+    try {
+        await fetch(`${API_URL}/auth/logout`, { method: 'POST' });
+        window.location.href = '/login.html';
+    } catch (error) {
+        console.error('Erro ao fazer logout:', error);
+        window.location.href = '/login.html';
+    }
+}
+
 // Inicialização
 document.addEventListener('DOMContentLoaded', () => {
+    checkAuthentication();
     loadDashboard();
     loadCursos();
     loadAlunos();
