@@ -232,7 +232,8 @@ O sistema possui uma **interface web completa** para gerenciamento visual:
 - 📊 **Dashboard:** Estatísticas em tempo real (total de cursos, alunos, matrículas)
 - 📚 **Gerenciamento de Cursos:** Criar, editar, excluir e visualizar cursos
 - 👥 **Gerenciamento de Alunos:** CRUD completo de alunos
-- 📝 **Gerenciamento de Matrículas:** Matricular alunos, atualizar progresso, cancelar matrículas
+- �‍🏫 **Gerenciamento de Professores:** CRUD completo de professores/usuários
+- �📝 **Gerenciamento de Matrículas:** Matricular alunos, atualizar progresso, cancelar matrículas
 - 🎯 **Filtros e Buscas:** Filtrar matrículas por aluno ou curso
 - 📱 **Design Responsivo:** Funciona em desktop, tablet e mobile
 
