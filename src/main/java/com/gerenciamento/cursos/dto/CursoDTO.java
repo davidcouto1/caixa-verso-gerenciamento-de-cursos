@@ -39,7 +39,7 @@ public class CursoDTO {
         dto.setVagas(curso.getVagas());
         dto.setVagasDisponiveis(curso.getVagasDisponiveis());
         dto.setAtivo(curso.getAtivo());
-        dto.setProfessorId(curso.getProfessorId());
+        dto.setProfessorId(curso.getProfessor() != null ? curso.getProfessor().getId() : null);
         dto.setDataCriacao(curso.getDataCriacao());
         dto.setTotalMatriculas(curso.getMatriculas() != null ? curso.getMatriculas().size() : 0);
         return dto;
@@ -47,6 +47,7 @@ public class CursoDTO {
 
     /**
      * Converte DTO para entidade Curso.
+     * Nota: O professor deve ser associado no Service após buscar o Usuario pelo professorId.
      */
     public Curso toEntity() {
         Curso curso = new Curso();
@@ -57,7 +58,7 @@ public class CursoDTO {
         curso.setVagas(this.vagas);
         curso.setVagasDisponiveis(this.vagasDisponiveis);
         curso.setAtivo(this.ativo != null ? this.ativo : true);
-        curso.setProfessorId(this.professorId);
+        // Professor será associado no Service usando professorId
         return curso;
     }
 }

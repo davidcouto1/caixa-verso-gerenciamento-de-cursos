@@ -87,7 +87,7 @@ public class DataSeeder implements CommandLineRunner {
             curso1.setCargaHoraria(60);
             curso1.setVagas(30);
             curso1.setVagasDisponiveis(30);
-            curso1.setProfessorId(prof1.getId());
+            curso1.setProfessor(prof1);
             curso1.setAtivo(true);
             
             Curso curso2 = new Curso();
@@ -96,7 +96,7 @@ public class DataSeeder implements CommandLineRunner {
             curso2.setCargaHoraria(80);
             curso2.setVagas(25);
             curso2.setVagasDisponiveis(25);
-            curso2.setProfessorId(prof2.getId());
+            curso2.setProfessor(prof2);
             curso2.setAtivo(true);
             
             Curso curso3 = new Curso();
@@ -105,7 +105,7 @@ public class DataSeeder implements CommandLineRunner {
             curso3.setCargaHoraria(50);
             curso3.setVagas(20);
             curso3.setVagasDisponiveis(20);
-            curso3.setProfessorId(prof3.getId());
+            curso3.setProfessor(prof3);
             curso3.setAtivo(true);
             
             Curso curso4 = new Curso();
@@ -114,7 +114,7 @@ public class DataSeeder implements CommandLineRunner {
             curso4.setCargaHoraria(40);
             curso4.setVagas(35);
             curso4.setVagasDisponiveis(35);
-            curso4.setProfessorId(prof1.getId());
+            curso4.setProfessor(prof1);
             curso4.setAtivo(true);
             
             Curso curso5 = new Curso();
@@ -123,7 +123,7 @@ public class DataSeeder implements CommandLineRunner {
             curso5.setCargaHoraria(70);
             curso5.setVagas(15);
             curso5.setVagasDisponiveis(15);
-            curso5.setProfessorId(prof2.getId());
+            curso5.setProfessor(prof2);
             curso5.setAtivo(true);
             
             cursoRepository.save(curso1);

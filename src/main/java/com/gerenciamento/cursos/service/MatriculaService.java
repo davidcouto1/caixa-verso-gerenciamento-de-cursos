@@ -98,6 +98,45 @@ public class MatriculaService {
     }
 
     /**
+     * Reativa uma matrícula cancelada.
+     */
+    @Transactional
+    public MatriculaDTO reativarMatricula(Long matriculaId) {
+        log.info("Reativando matrícula ID: {}", matriculaId);
+        
+        Matricula matricula = matriculaRepository.findById(matriculaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Matrícula", matriculaId));
+        
+        if (matricula.getStatus() != Matricula.StatusMatricula.CANCELADA) {
+            throw new BusinessException("Apenas matrículas canceladas podem ser reativadas");
+        }
+        
+        Curso curso = matricula.getCurso();
+        
+        // Verifica se o curso ainda está ativo
+        if (!curso.getAtivo()) {
+            throw new BusinessException("Não é possível reativar matrícula em curso inativo");
+        }
+        
+        // Verifica se há vagas disponíveis
+        if (!curso.temVagasDisponiveis()) {
+            throw new BusinessException("Curso não possui vagas disponíveis");
+        }
+        
+        // Reativa a matrícula
+        matricula.setStatus(Matricula.StatusMatricula.ATIVA);
+        
+        // Decrementa vaga disponível
+        curso.decrementarVaga();
+        cursoRepository.save(curso);
+        
+        matricula = matriculaRepository.save(matricula);
+        
+        log.info("Matrícula reativada com sucesso");
+        return MatriculaDTO.fromEntity(matricula);
+    }
+
+    /**
      * Atualiza o progresso de uma matrícula.
      */
     @Transactional

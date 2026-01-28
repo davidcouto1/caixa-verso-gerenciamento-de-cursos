@@ -4,7 +4,9 @@ import com.gerenciamento.cursos.dto.CursoDTO;
 import com.gerenciamento.cursos.exception.BusinessException;
 import com.gerenciamento.cursos.exception.ResourceNotFoundException;
 import com.gerenciamento.cursos.model.Curso;
+import com.gerenciamento.cursos.model.Usuario;
 import com.gerenciamento.cursos.repository.CursoRepository;
+import com.gerenciamento.cursos.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ import java.util.stream.Collectors;
 public class CursoService {
 
     private final CursoRepository cursoRepository;
+    private final UsuarioRepository usuarioRepository;
 
     /**
      * Lista todos os cursos ativos.
@@ -54,6 +57,14 @@ public class CursoService {
         validarDadosCurso(cursoDTO);
         
         Curso curso = cursoDTO.toEntity();
+        
+        // Buscar e associar o professor
+        if (cursoDTO.getProfessorId() != null) {
+            Usuario professor = usuarioRepository.findById(cursoDTO.getProfessorId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Professor", cursoDTO.getProfessorId()));
+            curso.setProfessor(professor);
+        }
+        
         curso = cursoRepository.save(curso);
         
         log.info("Curso criado com sucesso. ID: {}", curso.getId());
@@ -76,6 +87,13 @@ public class CursoService {
         cursoExistente.setNome(cursoDTO.getNome());
         cursoExistente.setDescricao(cursoDTO.getDescricao());
         cursoExistente.setCargaHoraria(cursoDTO.getCargaHoraria());
+        
+        // Atualizar professor se fornecido
+        if (cursoDTO.getProfessorId() != null) {
+            Usuario professor = usuarioRepository.findById(cursoDTO.getProfessorId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Professor", cursoDTO.getProfessorId()));
+            cursoExistente.setProfessor(professor);
+        }
         
         // Valida alteração de vagas
         if (cursoDTO.getVagas() != null && !cursoDTO.getVagas().equals(cursoExistente.getVagas())) {

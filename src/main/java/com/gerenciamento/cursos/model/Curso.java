@@ -57,8 +57,9 @@ public class Curso {
     private LocalDateTime dataAtualizacao;
 
     @NotNull(message = "Professor responsável é obrigatório")
-    @Column(nullable = false)
-    private Long professorId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "professor_id", nullable = false)
+    private Usuario professor;
 
     @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Matricula> matriculas = new ArrayList<>();

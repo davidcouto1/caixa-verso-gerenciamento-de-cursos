@@ -175,7 +175,7 @@ function populateProfessorSelect() {
     professoresCache.forEach(prof => {
         const option = document.createElement('option');
         option.value = prof.id;
-        option.textContent = `${prof.nome} (ID: ${prof.id})`;
+        option.textContent = prof.nome;
         select.appendChild(option);
     });
 }
@@ -184,17 +184,10 @@ function populateAlunoSelect() {
     const select = document.getElementById('matriculaAlunoId');
     select.innerHTML = '<option value="">Selecione um aluno...</option>';
     
-    alunosOptions = alunosCache.map(aluno => ({
-        value: aluno.id,
-        text: `${aluno.nome} - ${aluno.email}`,
-        searchText: `${aluno.nome} ${aluno.email} ${aluno.id}`.toLowerCase()
-    }));
-    
-    alunosOptions.forEach(opt => {
+    alunosCache.forEach(aluno => {
         const option = document.createElement('option');
-        option.value = opt.value;
-        option.textContent = opt.text;
-        option.dataset.search = opt.searchText;
+        option.value = aluno.id;
+        option.textContent = `${aluno.nome} - ${aluno.email}`;
         select.appendChild(option);
     });
 }
@@ -203,21 +196,14 @@ function populateCursoSelect() {
     const select = document.getElementById('matriculaCursoId');
     select.innerHTML = '<option value="">Selecione um curso...</option>';
     
-    cursosOptions = cursosCache
+    cursosCache
         .filter(curso => curso.ativo && curso.vagasDisponiveis > 0)
-        .map(curso => ({
-            value: curso.id,
-            text: `${curso.nome} (${curso.vagasDisponiveis} vagas)`,
-            searchText: `${curso.nome} ${curso.id}`.toLowerCase()
-        }));
-    
-    cursosOptions.forEach(opt => {
-        const option = document.createElement('option');
-        option.value = opt.value;
-        option.textContent = opt.text;
-        option.dataset.search = opt.searchText;
-        select.appendChild(option);
-    });
+        .forEach(curso => {
+            const option = document.createElement('option');
+            option.value = curso.id;
+            option.textContent = `${curso.nome} (${curso.vagasDisponiveis} vagas)`;
+            select.appendChild(option);
+        });
 }
 
 function filterSelect(selectId, searchText, type) {
@@ -279,6 +265,7 @@ function showCursoModal(curso = null) {
     const title = document.getElementById('cursoModalTitle');
     
     form.reset();
+    populateProfessorSelect();
     
     if (curso) {
         title.textContent = 'Editar Curso';
@@ -459,6 +446,9 @@ async function loadMatriculas() {
                             <button class="btn btn-success" onclick="showProgressoModal(${matricula.id}, ${matricula.progresso})">Progresso</button>
                             <button class="btn btn-danger" onclick="cancelarMatricula(${matricula.id})">Cancelar</button>
                         ` : ''}
+                        ${matricula.status === 'CANCELADA' ? `
+                            <button class="btn btn-primary" onclick="reativarMatricula(${matricula.id})" title="Reativar esta matrícula">✨ Reativar</button>
+                        ` : ''}
                     </div>
                 </td>
             </tr>
@@ -508,6 +498,28 @@ async function cancelarMatricula(id) {
     } catch (error) {
         console.error('Erro ao cancelar matrícula:', error);
         showMessage('Erro ao cancelar matrícula', 'error');
+    }
+}
+
+async function reativarMatricula(id) {
+    if (!confirm('Deseja realmente reativar esta matrícula?')) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/matriculas/${id}/reativar`, {
+            method: 'PATCH'
+        });
+        
+        if (response.ok) {
+            showMessage('Matrícula reativada com sucesso! ✨', 'success');
+            loadMatriculas();
+            loadDashboard();
+        } else {
+            const error = await response.json();
+            throw new Error(error.message || 'Erro ao reativar matrícula');
+        }
+    } catch (error) {
+        console.error('Erro ao reativar matrícula:', error);
+        showMessage(error.message, 'error');
     }
 }
 
@@ -636,8 +648,10 @@ function setupForms() {
         const cursoId = parseInt(document.getElementById('matriculaCursoId').value);
         
         try {
-            const response = await fetch(`${API_URL}/matriculas?alunoId=${alunoId}&cursoId=${cursoId}`, {
-                method: 'POST'
+            const response = await fetch(`${API_URL}/matriculas`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ alunoId, cursoId })
             });
             
             if (response.ok) {

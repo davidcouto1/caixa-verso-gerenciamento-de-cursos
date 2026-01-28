@@ -54,6 +54,16 @@ public class MatriculaController {
     }
 
     /**
+     * Reativa uma matrícula cancelada.
+     * PATCH /api/matriculas/{id}/reativar
+     */
+    @PatchMapping("/{id}/reativar")
+    public ResponseEntity<MatriculaDTO> reativar(@PathVariable Long id) {
+        MatriculaDTO matricula = matriculaService.reativarMatricula(id);
+        return ResponseEntity.ok(matricula);
+    }
+
+    /**
      * Atualiza o progresso de uma matrícula.
      * PATCH /api/matriculas/{id}/progresso
      * Body: { "progresso": 75.5 }
