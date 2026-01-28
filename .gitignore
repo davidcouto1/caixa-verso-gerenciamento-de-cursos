@@ -41,3 +41,6 @@ Thumbs.db
 
 # Application specific
 application-local.properties
+
+# Presentation files
+APRESENTACAO.md
