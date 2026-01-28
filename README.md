@@ -42,7 +42,7 @@ O sistema utiliza o padrão **MVC (Model-View-Controller)** organizado em camada
                │
 ┌──────────────▼──────────────────────┐
 │        Banco de Dados               │
-│      (MySQL/PostgreSQL)             │
+│      (H2 Database)                  │
 └─────────────────────────────────────┘
 ```
 
@@ -116,18 +116,18 @@ O sistema utiliza o padrão **MVC (Model-View-Controller)** organizado em camada
 
 **Impacto:** Redução de código boilerplate mantendo controle sobre a arquitetura.
 
-#### 2. Banco de Dados Relacional (MySQL)
-**Decisão:** Usar banco de dados relacional para persistência.
+#### 2. Banco de Dados H2
+**Decisão:** Usar banco de dados H2 em memória para persistência.
 
 **Justificativa:**
 - Relacionamentos claros entre Curso, Aluno e Matrícula
 - ACID garante consistência em operações críticas (ex: limite de vagas)
 - Consultas complexas facilitadas por SQL
+- Configuração zero - não requer instalação externa
+- Console web integrado para visualização dos dados
+- Ideal para desenvolvimento, testes e demonstrações acadêmicas
 
-**Alternativa considerada:** NoSQL (MongoDB)
-- Descartada por não ser ideal para relacionamentos complexos
-
-**Impacto:** Integridade referencial garantida, facilita queries de relatórios.
+**Impacto:** Integridade referencial garantida, facilita desenvolvimento e testes, elimina dependências externas.
 
 #### 3. API REST (JSON)
 **Decisão:** Expor funcionalidades via API REST com respostas JSON.
@@ -172,20 +172,11 @@ O sistema utiliza o padrão **MVC (Model-View-Controller)** organizado em camada
 ### Pré-requisitos
 - Java 17 ou superior
 - Maven 3.6+
-- MySQL 8.0+ ou PostgreSQL 12+
 - IDE (IntelliJ IDEA, Eclipse, VS Code)
 
 ### Configuração do Banco de Dados
 
-1. Crie um banco de dados MySQL:
-```sql
-CREATE DATABASE gerenciamento_cursos;
-CREATE USER 'curso_user'@'localhost' IDENTIFIED BY 'senha123';
-GRANT ALL PRIVILEGES ON gerenciamento_cursos.* TO 'curso_user'@'localhost';
-FLUSH PRIVILEGES;
-```
-
-2. Configure as credenciais em `src/main/resources/application.properties`
+O projeto utiliza **H2 Database em memória**, que não requer instalação ou configuração adicional. O banco de dados é criado automaticamente ao iniciar a aplicação.
 
 ### Execução
 
@@ -205,9 +196,12 @@ mvn clean install
 mvn spring-boot:run
 ```
 
-4. **Acesse a API:**
-- Base URL: `http://localhost:8080`
-- Swagger UI: `http://localhost:8080/swagger-ui.html` (se configurado)
+4. **Acesse a aplicação:**
+- API Base URL: `http://localhost:8080`
+- Console H2: `http://localhost:8080/h2-console`
+  - JDBC URL: `jdbc:h2:mem:gerenciamento_cursos`
+  - Username: `sa`
+  - Password: *(deixe em branco)*
 
 ### Exemplos de Endpoints
 
