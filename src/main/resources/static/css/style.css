@@ -356,6 +356,16 @@ tbody tr:hover {
     transition: border-color 0.3s;
 }
 
+.form-group select[size] {
+    height: auto;
+    overflow-y: auto;
+}
+
+.form-group input[type="text"][id$="Search"] {
+    margin-bottom: 0.5rem;
+    border-color: var(--primary-color);
+}
+
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
@@ -375,6 +385,7 @@ tbody tr:hover {
     margin-bottom: 1.5rem;
     display: flex;
     gap: 1rem;
+    flex-wrap: wrap;
 }
 
 .filters select,
@@ -383,6 +394,7 @@ tbody tr:hover {
     border: 1px solid var(--border-color);
     border-radius: 0.375rem;
     font-size: 0.875rem;
+    min-width: 200px;
 }
 
 /* Action Buttons */

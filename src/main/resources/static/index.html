@@ -106,12 +106,14 @@
                 <button class="btn btn-primary" onclick="showMatriculaModal()">+ Nova Matrícula</button>
             </div>
             <div class="filters">
-                <select id="filtroTipo" onchange="loadMatriculas()">
+                <select id="filtroTipo" onchange="updateFiltroMatriculas()">
                     <option value="todas">Todas as Matrículas</option>
                     <option value="aluno">Por Aluno</option>
                     <option value="curso">Por Curso</option>
                 </select>
-                <input type="number" id="filtroId" placeholder="ID do Aluno/Curso" style="display:none;" onchange="loadMatriculas()">
+                <select id="filtroId" style="display:none;" onchange="loadMatriculas()">
+                    <option value="">Selecione...</option>
+                </select>
             </div>
             <div class="table-container">
                 <table id="matriculasTable">
@@ -162,8 +164,10 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="cursoProfessorId">ID do Professor *</label>
-                    <input type="number" id="cursoProfessorId" min="1" required>
+                    <label for="cursoProfessorId">Professor Responsável *</label>
+                    <select id="cursoProfessorId" required>
+                        <option value="">Selecione um professor...</option>
+                    </select>
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('cursoModal')">Cancelar</button>
@@ -213,12 +217,18 @@
             <h2>Nova Matrícula</h2>
             <form id="matriculaForm">
                 <div class="form-group">
-                    <label for="matriculaAlunoId">ID do Aluno *</label>
-                    <input type="number" id="matriculaAlunoId" min="1" required>
+                    <label for="matriculaAlunoId">Aluno *</label>
+                    <input type="text" id="matriculaAlunoSearch" placeholder="Buscar aluno por nome..." oninput="filterSelect('matriculaAlunoId', this.value, 'aluno')">
+                    <select id="matriculaAlunoId" required size="5">
+                        <option value="">Selecione um aluno...</option>
+                    </select>
                 </div>
                 <div class="form-group">
-                    <label for="matriculaCursoId">ID do Curso *</label>
-                    <input type="number" id="matriculaCursoId" min="1" required>
+                    <label for="matriculaCursoId">Curso *</label>
+                    <input type="text" id="matriculaCursoSearch" placeholder="Buscar curso por nome..." oninput="filterSelect('matriculaCursoId', this.value, 'curso')">
+                    <select id="matriculaCursoId" required size="5">
+                        <option value="">Selecione um curso...</option>
+                    </select>
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('matriculaModal')">Cancelar</button>

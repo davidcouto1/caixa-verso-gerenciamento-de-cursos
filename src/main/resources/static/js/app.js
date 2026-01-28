@@ -1,5 +1,12 @@
 const API_URL = 'http://localhost:8080/api';
 
+// Caches para dados
+let professoresCache = [];
+let alunosCache = [];
+let cursosCache = [];
+let alunosOptions = [];
+let cursosOptions = [];
+
 // Inicialização
 document.addEventListener('DOMContentLoaded', () => {
     loadDashboard();
@@ -7,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadAlunos();
     setupForms();
     setupFilters();
+    loadProfessores();
 });
 
 // Navegação
@@ -52,11 +60,100 @@ async function loadDashboard() {
     }
 }
 
+// PROFESSORES
+async function loadProfessores() {
+    try {
+        const response = await fetch(`${API_URL}/usuarios/professores`);
+        const professores = await response.json();
+        professoresCache = professores;
+    } catch (error) {
+        console.error('Erro ao carregar professores:', error);
+        // Se não houver professores, criar alguns de exemplo
+        professoresCache = [
+            { id: 1, nome: 'Professor 1', tipo: 'PROFESSOR' },
+            { id: 2, nome: 'Professor 2', tipo: 'PROFESSOR' },
+            { id: 3, nome: 'Professor 3', tipo: 'PROFESSOR' }
+        ];
+    }
+}
+
+function populateProfessorSelect() {
+    const select = document.getElementById('cursoProfessorId');
+    select.innerHTML = '<option value="">Selecione um professor...</option>';
+    
+    professoresCache.forEach(prof => {
+        const option = document.createElement('option');
+        option.value = prof.id;
+        option.textContent = `${prof.nome} (ID: ${prof.id})`;
+        select.appendChild(option);
+    });
+}
+
+function populateAlunoSelect() {
+    const select = document.getElementById('matriculaAlunoId');
+    select.innerHTML = '<option value="">Selecione um aluno...</option>';
+    
+    alunosOptions = alunosCache.map(aluno => ({
+        value: aluno.id,
+        text: `${aluno.nome} - ${aluno.email}`,
+        searchText: `${aluno.nome} ${aluno.email} ${aluno.id}`.toLowerCase()
+    }));
+    
+    alunosOptions.forEach(opt => {
+    populateProfessorSelect();
+        const option = document.createElement('option');
+        option.value = opt.value;
+        option.textContent = opt.text;
+        option.dataset.search = opt.searchText;
+        select.appendChild(option);
+    });
+}
+
+function populateCursoSelect() {
+    const select = document.getElementById('matriculaCursoId');
+    select.innerHTML = '<option value="">Selecione um curso...</option>';
+    
+    cursosOptions = cursosCache
+        .filter(curso => curso.ativo && curso.vagasDisponiveis > 0)
+        .map(curso => ({
+            value: curso.id,
+            text: `${curso.nome} (${curso.vagasDisponiveis} vagas)`,
+            searchText: `${curso.nome} ${curso.id}`.toLowerCase()
+        }));
+    
+    cursosOptions.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt.value;
+        option.textContent = opt.text;
+        option.dataset.search = opt.searchText;
+        select.appendChild(option);
+    });
+}
+
+function filterSelect(selectId, searchText, type) {
+    const select = document.getElementById(selectId);
+    const options = type === 'aluno' ? alunosOptions : cursosOptions;
+    const search = searchText.toLowerCase();
+    
+    select.innerHTML = '<option value="">Selecione...</option>';
+    
+    const filtered = options.filter(opt => opt.searchText.includes(search));
+    
+    filtered.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt.value;
+        option.textContent = opt.text;
+        option.dataset.search = opt.searchText;
+        select.appendChild(option);
+    });
+}
+
 // CURSOS
 async function loadCursos() {
     try {
         const response = await fetch(`${API_URL}/cursos`);
         const cursos = await response.json();
+        cursosCache = cursos;
         const tbody = document.getElementById('cursosTableBody');
         
         if (cursos.length === 0) {
@@ -145,6 +242,7 @@ async function deleteCurso(id) {
 async function loadAlunos() {
     try {
         const response = await fetch(`${API_URL}/alunos`);
+        alunosCache = alunos;
         const alunos = await response.json();
         const tbody = document.getElementById('alunosTableBody');
         
@@ -197,6 +295,15 @@ function showAlunoModal(aluno = null) {
     modal.classList.add('active');
 }
 
+    // Popular selects
+    populateAlunoSelect();
+    populateCursoSelect();
+    
+    // Limpar campos de busca
+    document.getElementById('matriculaAlunoSearch').value = '';
+    document.getElementById('matriculaCursoSearch').value = '';
+    
+    
 async function editAluno(id) {
     try {
         const response = await fetch(`${API_URL}/alunos/${id}`);
@@ -358,15 +465,37 @@ function setupForms() {
         }
     });
     
-    // Aluno Form
-    document.getElementById('alunoForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
+    updateFiltroMatriculas();
+}
+
+async function updateFiltroMatriculas() {
+    const filtroTipo = document.getElementById('filtroTipo').value;
+    const filtroId = document.getElementById('filtroId');
+    
+    if (filtroTipo === 'todas') {
+        filtroId.style.display = 'none';
+        filtroId.value = '';
+        loadMatriculas();
+    } else {
+        filtroId.style.display = 'block';
+        filtroId.innerHTML = '<option value="">Selecione...</option>';
         
-        const id = document.getElementById('alunoId').value;
-        const data = {
-            nome: document.getElementById('alunoNome').value,
-            email: document.getElementById('alunoEmail').value,
-            cpf: document.getElementById('alunoCpf').value.replace(/\D/g, ''),
+        if (filtroTipo === 'aluno') {
+            alunosCache.forEach(aluno => {
+                const option = document.createElement('option');
+                option.value = aluno.id;
+                option.textContent = `${aluno.nome} (${aluno.email})`;
+                filtroId.appendChild(option);
+            });
+        } else if (filtroTipo === 'curso') {
+            cursosCache.forEach(curso => {
+                const option = document.createElement('option');
+                option.value = curso.id;
+                option.textContent = curso.nome;
+                filtroId.appendChild(option);
+            });
+        }
+    }     cpf: document.getElementById('alunoCpf').value.replace(/\D/g, ''),
             telefone: document.getElementById('alunoTelefone').value
         };
         
