@@ -300,8 +300,7 @@ src/
 
 ## 9. Integrantes do Projeto
 
-- **Nome Completo do Integrante 1:** [SEU NOME AQUI]
-- **Nome Completo do Integrante 2:** [NOME DO PARCEIRO AQUI]
+- **David Couto Bitencourt**
 
 ## 10. Conclusão
 
