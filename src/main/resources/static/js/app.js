@@ -45,14 +45,16 @@ function showSection(sectionId) {
 // Dashboard
 async function loadDashboard() {
     try {
-        const [cursos, alunos, cursosComVagas] = await Promise.all([
+        const [cursos, alunos, professores, cursosComVagas] = await Promise.all([
             fetch(`${API_URL}/cursos`).then(r => r.json()),
             fetch(`${API_URL}/alunos`).then(r => r.json()),
+            fetch(`${API_URL}/usuarios/professores`).then(r => r.json()),
             fetch(`${API_URL}/cursos/disponiveis`).then(r => r.json())
         ]);
 
         document.getElementById('totalCursos').textContent = cursos.length;
         document.getElementById('totalAlunos').textContent = alunos.length;
+        document.getElementById('totalProfessores').textContent = professores.length;
         document.getElementById('cursosComVagas').textContent = cursosComVagas.length;
 
         // Calcular total de matrículas
@@ -162,8 +164,7 @@ async function deleteProfessor(id) {
         }
     } catch (error) {
         console.error('Erro ao excluir professor:', error);
-        showMessage('Erro ao excluir professor', 'error')   { id: 3, nome: 'Professor 3', tipo: 'PROFESSOR' }
-        ];
+        showMessage('Erro ao excluir professor', 'error');
     }
 }
 
@@ -505,7 +506,14 @@ async function cancelarMatricula(id) {
             throw new Error(error.message || 'Erro ao cancelar matrícula');
         }
     } catch (error) {
-       Professor Form
+        console.error('Erro ao cancelar matrícula:', error);
+        showMessage('Erro ao cancelar matrícula', 'error');
+    }
+}
+
+// FORMS
+function setupForms() {
+    // Professor Form
     document.getElementById('professorForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -543,13 +551,6 @@ async function cancelarMatricula(id) {
         }
     });
     
-    //  console.error('Erro ao cancelar matrícula:', error);
-        showMessage(error.message, 'error');
-    }
-}
-
-// FORMS
-function setupForms() {
     // Curso Form
     document.getElementById('cursoForm').addEventListener('submit', async (e) => {
         e.preventDefault();
