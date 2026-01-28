@@ -20,6 +20,7 @@ public class AlunoDTO {
     private String email;
     private String cpf;
     private String telefone;
+    private String senha; // Senha para criar usuário no sistema
     private Boolean ativo;
     private LocalDateTime dataCadastro;
     private Integer totalCursos;

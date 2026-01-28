@@ -642,6 +642,11 @@ function setupForms() {
             telefone: document.getElementById('alunoTelefone').value
         };
         
+        // Adiciona senha apenas ao criar novo aluno
+        if (!id) {
+            data.senha = document.getElementById('alunoSenha').value;
+        }
+        
         try {
             const url = id ? `${API_URL}/alunos/${id}` : `${API_URL}/alunos`;
             const method = id ? 'PUT' : 'POST';
@@ -704,8 +709,10 @@ function setupForms() {
         const progresso = parseFloat(document.getElementById('progressoValor').value);
         
         try {
-            const response = await fetch(`${API_URL}/matriculas/${matriculaId}/progresso?progresso=${progresso}`, {
-                method: 'PATCH'
+            const response = await fetch(`${API_URL}/matriculas/${matriculaId}/progresso`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ progresso })
             });
             
             if (response.ok) {

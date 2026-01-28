@@ -1,7 +1,7 @@
 package com.gerenciamento.cursos.controller;
 
 import com.gerenciamento.cursos.model.Usuario;
-import com.gerenciamento.cursos.repository.UsuarioRepository;
+import com.gerenciamento.cursos.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,7 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UsuarioController {
 
-    private final UsuarioRepository usuarioRepository;
+    private final UsuarioService usuarioService;
 
     /**
      * Lista todos os usuários.
@@ -26,7 +26,7 @@ public class UsuarioController {
      */
     @GetMapping
     public ResponseEntity<List<Usuario>> listarTodos() {
-        List<Usuario> usuarios = usuarioRepository.findAll();
+        List<Usuario> usuarios = usuarioService.listarTodos();
         return ResponseEntity.ok(usuarios);
     }
 
@@ -36,7 +36,7 @@ public class UsuarioController {
      */
     @GetMapping("/professores")
     public ResponseEntity<List<Usuario>> listarProfessores() {
-        List<Usuario> professores = usuarioRepository.findByTipo(Usuario.TipoUsuario.PROFESSOR);
+        List<Usuario> professores = usuarioService.listarProfessores();
         return ResponseEntity.ok(professores);
     }
 
@@ -46,9 +46,8 @@ public class UsuarioController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<Usuario> buscarPorId(@PathVariable Long id) {
-        return usuarioRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Usuario usuario = usuarioService.buscarPorId(id);
+        return ResponseEntity.ok(usuario);
     }
 
     /**
@@ -57,7 +56,7 @@ public class UsuarioController {
      */
     @PostMapping
     public ResponseEntity<Usuario> criar(@Valid @RequestBody Usuario usuario) {
-        Usuario novoUsuario = usuarioRepository.save(usuario);
+        Usuario novoUsuario = usuarioService.criar(usuario);
         return ResponseEntity.status(HttpStatus.CREATED).body(novoUsuario);
     }
 
@@ -67,17 +66,8 @@ public class UsuarioController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<Usuario> atualizar(@PathVariable Long id, @Valid @RequestBody Usuario usuario) {
-        return usuarioRepository.findById(id)
-                .map(usuarioExistente -> {
-                    usuarioExistente.setNome(usuario.getNome());
-                    usuarioExistente.setEmail(usuario.getEmail());
-                    if (usuario.getSenha() != null && !usuario.getSenha().isEmpty()) {
-                        usuarioExistente.setSenha(usuario.getSenha());
-                    }
-                    Usuario atualizado = usuarioRepository.save(usuarioExistente);
-                    return ResponseEntity.ok(atualizado);
-                })
-                .orElse(ResponseEntity.notFound().build());
+        Usuario usuarioAtualizado = usuarioService.atualizar(id, usuario);
+        return ResponseEntity.ok(usuarioAtualizado);
     }
 
     /**
@@ -86,12 +76,7 @@ public class UsuarioController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        return usuarioRepository.findById(id)
-                .map(usuario -> {
-                    usuario.setAtivo(false);
-                    usuarioRepository.save(usuario);
-                    return ResponseEntity.noContent().<Void>build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+        usuarioService.desativar(id);
+        return ResponseEntity.noContent().build();
     }
 }

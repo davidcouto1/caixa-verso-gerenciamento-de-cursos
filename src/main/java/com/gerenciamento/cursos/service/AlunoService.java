@@ -4,9 +4,12 @@ import com.gerenciamento.cursos.dto.AlunoDTO;
 import com.gerenciamento.cursos.exception.BusinessException;
 import com.gerenciamento.cursos.exception.ResourceNotFoundException;
 import com.gerenciamento.cursos.model.Aluno;
+import com.gerenciamento.cursos.model.Usuario;
 import com.gerenciamento.cursos.repository.AlunoRepository;
+import com.gerenciamento.cursos.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +25,8 @@ import java.util.stream.Collectors;
 public class AlunoService {
 
     private final AlunoRepository alunoRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * Lista todos os alunos ativos.
@@ -56,6 +61,24 @@ public class AlunoService {
         
         Aluno aluno = alunoDTO.toEntity();
         aluno = alunoRepository.save(aluno);
+        
+        // Criar usuário automaticamente para o aluno
+        if (!usuarioRepository.findByEmail(aluno.getEmail()).isPresent()) {
+            Usuario usuario = new Usuario();
+            usuario.setNome(aluno.getNome());
+            usuario.setEmail(aluno.getEmail());
+            
+            // Usa senha informada ou senha padrão
+            String senha = alunoDTO.getSenha() != null && !alunoDTO.getSenha().isEmpty() 
+                ? alunoDTO.getSenha() 
+                : "aluno123";
+            usuario.setSenha(passwordEncoder.encode(senha));
+            
+            usuario.setTipo(Usuario.TipoUsuario.ALUNO);
+            usuario.setAtivo(true);
+            usuarioRepository.save(usuario);
+            log.info("Usuário criado automaticamente para o aluno: {}", aluno.getEmail());
+        }
         
         log.info("Aluno criado com sucesso. ID: {}", aluno.getId());
         return AlunoDTO.fromEntity(aluno);
