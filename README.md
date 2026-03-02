@@ -577,6 +577,24 @@ src/
 
 ## 10. Conclusão
 
+## 🗃️ Sessão distribuída e escalabilidade (Didático)
+
+Quando a aplicação é executada com múltiplas instâncias (ex: `docker-compose up --build --scale app=3`), cada container mantém sessões de usuário apenas em sua própria memória. Isso significa que, sem configuração extra, o login pode ser "perdido" ao alternar entre instâncias, pois cada uma não compartilha o estado de autenticação.
+
+**Para resolver esse problema em ambientes escaláveis, é necessário usar um gerenciador de sessão distribuída**, como:
+- Spring Session com JDBC (banco relacional)
+- Spring Session com Redis (cache distribuído)
+- Spring Session com Hazelcast (in-memory grid)
+
+Neste projeto, foi adotado o **Spring Session JDBC** usando o próprio banco H2, permitindo que todas as instâncias compartilhem as sessões de login. Assim, o usuário permanece autenticado mesmo com balanceamento de carga.
+
+> **Resumo didático:**
+> - Monolitos simples: sessão em memória (não escala)
+> - Sistemas escaláveis: sessão distribuída (JDBC, Redis, etc.)
+> - Spring Session resolve o problema de forma transparente
+
+Essa abordagem é fundamental para aplicações modernas que precisam de alta disponibilidade e escalabilidade horizontal.
+
 Este projeto demonstra a aplicação prática de conceitos de arquitetura de software em um contexto realista. A escolha por uma arquitetura monolítica em camadas permite clareza na separação de responsabilidades, facilitando manutenção e evolução futura do sistema.
 
 A implementação prioriza **baixo acoplamento**, **alta coesão** e **single responsibility principle**, fundamentais para um software sustentável e de qualidade.

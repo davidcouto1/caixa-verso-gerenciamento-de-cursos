@@ -26,12 +26,18 @@ public class RequestIdFilter extends OncePerRequestFilter {
         }
         // put in MDC for logging
         MDC.put(MDC_KEY, reqId);
+        // Adiciona INSTANCE_ID do ambiente ao MDC para logs
+        String instanceId = System.getenv("HOSTNAME");
+        if (instanceId != null) {
+            MDC.put("INSTANCE_ID", instanceId);
+        }
         // ensure it's on the response too
         response.setHeader(HEADER, reqId);
         try {
             filterChain.doFilter(request, response);
         } finally {
             MDC.remove(MDC_KEY);
+            MDC.remove("INSTANCE_ID");
         }
     }
 }
