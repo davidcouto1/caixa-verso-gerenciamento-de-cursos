@@ -209,6 +209,53 @@ mvn spring-boot:run
   - Username: `sa`
   - Password: *(deixe em branco)*
 
+### 🔁 Proxy reverso com Nginx
+
+O projeto inclui um exemplo de configuração para que um servidor **Nginx** funcione como *reverse proxy* na frente da aplicação Spring Boot.
+
+1. **Configuração:** copie o arquivo `nginx.conf` localizado na raiz do repositório para o diretório de configuração do Nginx (`/etc/nginx/nginx.conf` em instalações Linux) ou mantenha-o junto ao `docker-compose.yml`.
+
+```nginx
+# conteúdo de nginx.conf provido no repositório
+# (o upstream aponta para a aplicação ou para o serviço Docker `app`)
+events {}
+http {
+    upstream backend {
+        server app:8080;    # ou localhost:8080 quando rodando localmente
+    }
+
+    server {
+        listen 80;
+        server_name localhost;
+
+        location / {
+            proxy_pass http://backend;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+}
+```
+
+2. **Docker (opcional):** o arquivo `docker-compose.yml` já traz um serviço `nginx` que monta essa configuração e expõe a porta 80.
+
+```bash
+# gerar o artefato Java e subir os contêineres
+mvn clean package
+docker-compose up --build
+```
+
+3. **Execução manual:** sem Docker, instale o Nginx em sua máquina e reinicie o serviço após copiar o `nginx.conf`:
+
+```bash
+sudo cp nginx.conf /etc/nginx/nginx.conf
+sudo systemctl restart nginx
+```
+
+> O proxy permite receber requisições na porta 80, aplicar SSL/caching e repassá‑las à aplicação em 8080.
+
 ### 🔐 Autenticação e Controle de Acesso
 
 O sistema implementa **controle de acesso baseado em perfis** (RBAC) com Spring Security. Autenticação obrigatória para acessar as funcionalidades.
