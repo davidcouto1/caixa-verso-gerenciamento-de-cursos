@@ -175,13 +175,13 @@ O sistema utiliza o padrão **MVC (Model-View-Controller)** organizado em camada
 ## 6. Instruções para Execução
 
 ### Pré-requisitos
-- Java 17 ou superior
-- Maven 3.6+
-- IDE (IntelliJ IDEA, Eclipse, VS Code)
+- **Docker** (e Docker Compose) – requisito principal para execução rápida
+- *(opcional)* Java 17 e Maven caso deseje rodar localmente sem container
+- IDE (IntelliJ IDEA, Eclipse, VS Code) para desenvolvimento
 
 ### Configuração do Banco de Dados
 
-O projeto utiliza **H2 Database em memória**, que não requer instalação ou configuração adicional. O banco de dados é criado automaticamente ao iniciar a aplicação.
+O projeto utiliza **H2 Database em memória** durante desenvolvimento; nenhuma instalação é necessária e o banco é inicializado automaticamente pela aplicação. Em ambiente containerizado, a mesma configuração é usada sem ajustes adicionais.
 
 ### Execução
 
@@ -191,22 +191,32 @@ git clone https://github.com/seu-usuario/sistema-gerenciamento-cursos.git
 cd sistema-gerenciamento-cursos
 ```
 
-2. **Compile o projeto:**
+2. **Compile e rode com Docker Compose (recomendado):**
 ```bash
-mvn clean install
-```
-
-3. **Execute a aplicação:**
-```bash
-mvn spring-boot:run
-```
-
-> 💡 Alternativamente, toda a stack (aplicação + Nginx) pode ser inicializada com Docker Compose. O `Dockerfile` já usa um *multi-stage build* para compilar o artefato dentro de um contêiner Maven, assim não é necessário ter o Maven instalado localmente.
-
-```bash
-# gera a imagem da aplicação e sobe também o Nginx como reverso
+# ao puxar o repositório, basta executar na raiz
 docker-compose up --build
 ```
+
+Este comando compila a aplicação dentro de um contêiner Maven (multi‑stage build), cria as imagens e sobe ambos os serviços `app` e `nginx` já configurados.
+
+> 🔧 Não há necessidade de ter Java ou Maven instalados na máquina — apenas Docker.
+
+3. **Execução local opcional:**
+Se preferir rodar sem containers para desenvolvimento rápido:
+```bash
+mvn clean install
+mvn spring-boot:run
+``` 
+
+(estas etapas exigem Java 17 e Maven na máquina)
+
+4. **Acesse a aplicação:**
+- **Interface Web:** `http://localhost:8080` ⭐
+- **API REST:** `http://localhost:8080/api`
+- **Console H2:** `http://localhost:8080/h2-console`
+  - JDBC URL: `jdbc:h2:mem:gerenciamento_cursos`
+  - Username: `sa`
+  - Password: *(deixe em branco)*
 
 4. **Acesse a aplicação:**
 - **Interface Web:** `http://localhost:8080` ⭐
