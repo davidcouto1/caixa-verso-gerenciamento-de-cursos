@@ -185,6 +185,22 @@ O projeto utiliza **H2 Database em memória** durante desenvolvimento; nenhuma i
 
 ### Execução
 
+> 📌 **Observações de infraestrutura (requisitos do professor):**
+>
+> * O Nginx atua como **reverse proxy** e **load balancer**, escutando na porta 80.
+> * A API Spring Boot roda em container separado e **não expõe** sua porta 8080
+>   ao host. Assim, `http://localhost:8080` não responde, mostrando que apenas o
+>   proxy é acessível.
+> * O Nginx adiciona *headers de segurança* em todas as respostas:
+>   `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` e
+>   `X-XSS-Protection: 1; mode=block`.
+> * A comunicação entre Nginx e API se dá pela rede Docker; a escala de réplicas
+>   (`--scale app=N`) e health checks garantem controle de tráfego/robustez.
+>
+> Estes requisitos são testáveis via navegador ou ferramentas como Postman.
+
+### Execução
+
 1. **Clone o repositório:**
 ```bash
 git clone https://github.com/seu-usuario/sistema-gerenciamento-cursos.git
@@ -210,26 +226,116 @@ mvn spring-boot:run
 
 (estas etapas exigem Java 17 e Maven na máquina)
 
-4. **Acesse a aplicação:**
-- **Interface Web:** `http://localhost:8080` ⭐
-- **API REST:** `http://localhost:8080/api`
-- **Console H2:** `http://localhost:8080/h2-console`
+4. **Acesse a aplicação via proxy:**
+- **Interface Web:** `http://localhost` ⭐
+- **API REST:** `http://localhost/api`
+- **Console H2:** `http://localhost/h2-console`
   - JDBC URL: `jdbc:h2:mem:gerenciamento_cursos`
   - Username: `sa`
   - Password: *(deixe em branco)*
 
-4. **Acesse a aplicação:**
-- **Interface Web:** `http://localhost:8080` ⭐
-- **API REST:** `http://localhost:8080/api`
-- **Console H2:** `http://localhost:8080/h2-console`
-  - JDBC URL: `jdbc:h2:mem:gerenciamento_cursos`
-  - Username: `sa`
-  - Password: *(deixe em branco)*
+> ⚠️ A porta 8080 da API não é exposta ao host; acessos diretos (por exemplo
+> `http://localhost:8080`) devem falhar, deixando claro que apenas o proxy serve
+> como ponto de entrada.
 
 ### 🔁 Proxy reverso com Nginx
 
 O projeto inclui um exemplo de configuração para que um servidor **Nginx** funcione como *reverse proxy* na frente da aplicação Spring Boot.
 
+> 🛡️ O Nginx também injeta cabeçalhos de segurança em todas as respostas:
+> `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` e
+> `X-XSS-Protection: 1; mode=block`, verificáveis via navegador/Postman.
+
+> ⚖️ O balanceamento round‑robin e health checks permitem escalar o serviço e
+> garantir que containers doentes não recebam tráfego (documentado mais adiante).
+
+> 🚦 **Rate limiting:** a camada de proxy aplica um limite de **5 requisições por
+> segundo por IP** com burst de 10. Excedendo essa taxa o cliente recebe HTTP 429
+> (Too Many Requests), demonstrando controle de tráfego.
+>
+> 🔐 **Autenticação básica:** os caminhos `/swagger` e `/actuator` estão protegidos
+> por autenticação básica HTTP, com credencial `admin:secret` (arquivo
+> `nginx.htpasswd`). Ao acessar sem credenciais você receberá 401, com credenciais
+> corretamente poderá visualizar o recurso.
+> 
+> ❗ **Páginas de erro personalizadas:** o proxy serve páginas HTML estáticas para
+> 404 (`custom_404.html`) e para erros 50x (`custom_50x.html`). Simplesmente
+> solicite um recurso inexistente ou pare o container `app` para forçar o erro e
+> ver a mensagem amigável.
+> 
+> Para gerar seu próprio usuário/senha use o utilitário `htpasswd`:
+> ```bash
+> htpasswd -c nginx.htpasswd usuario
+> ```
+> O arquivo deve ser montado no serviço Nginx via Docker Compose.
+>
+> **Teste:** gere requisições rápidas e observe o código 429 retornado. Por exemplo:
+>
+> ```bash
+> for i in {1..20}; do curl -s -o /dev/null -w "%{http_code} \n" http://localhost; done
+> ```
+>
+> Você verá vários `200` inicialmente, seguidos por `429` quando o burst/limite é
+> ultrapassado. Com ferramentas Windows (PowerShell) o mesmo efeito pode ser obtido
+> via loop `Invoke-WebRequest` e verificando `StatusCode`.
+>
+> 🚫 **Limite de payload:** o proxy também impõe `client_max_body_size 1m`. Se um
+> cliente enviar mais de 1 MB em uma única requisição ele receberá HTTP 413 (Payload
+> Too Large). Use `curl --data-binary @arquivo_grande` para testar.
+🎁 **GZIP:** a compressão está ativada para tipos `application/json` e `text/plain`.
+Respostas desses tipos virão com o cabeçalho `Content-Encoding: gzip`, reduzindo o
+uso de banda. Teste com `curl -I` e veja o header.
+
+📝 **Logs estruturados:** o Nginx grava as seguintes informações em cada linha do
+access log:
+
+- IP do cliente (`$remote_addr`)
+- Método HTTP (`$request_method`)
+- Código de status (`$status`)
+- Endereço do upstream atendente (`$upstream_addr`)
+- Tempo de resposta do upstream (`$upstream_response_time`)
+
+Exemplo real de linha de log (após gerar requisições):
+
+```
+127.0.0.1 - [02/Mar/2026:10:15:00 +0000] "GET / HTTP/1.1" status:200 upstream:app_1:8080 utime:0.002
+`
+
+Para ver os logs no container execute (em sua máquina):
+
+```bash
+docker-compose exec nginx tail -f /var/log/nginx/access.log
+```
+
+Isso ajuda a correlacionar tráfego, status e performance dos backends.
+
+🗂️ **Cache de GET:** respostas a requisições GET são armazenadas em cache por 10
+segundos. O cabeçalho `X-Cache-Status` indica se a requisição foi um _HIT_ ou _MISS_.
+Basta fazer duas chamadas rápidas ao mesmo endpoint para observar o comportamento:
+
+```bash
+curl -I http://localhost/api/cursos; sleep 1; curl -I http://localhost/api/cursos
+```
+
+A segunda resposta deve mostrar `X-Cache-Status: HIT` se bem-sucedida.
+
+🧵 **Request ID / correlação:** O Nginx injeta um header `X-Request-ID` com um
+identificador único (ou reaproveita o enviado pelo cliente) em cada requisição.
+Essa mesma ID é passada ao backend e registrada nos logs da aplicação via MDC.
+O padrão de log foi ajustado (`%X{requestId}`) para facilitar correlação.
+Para ver no backend, consulte o console do Spring Boot após fazer requisições e
+observe o valor entre colchetes no início de cada linha.
+
+🔁 **Balanceamento com 2 instâncias:** para demonstrar o comportamento em um
+cenário com duas réplicas basta iniciar os serviços com escala:
+
+```bash
+# compilar e subir com duas instâncias do app
+docker-compose up --build --scale app=2
+```
+
+O Nginx enviará requisições alternadamente entre as duas instâncias; essa ação
+prova o requisito de balanceamento opcional.
 1. **Configuração:** copie o arquivo `nginx.conf` localizado na raiz do repositório para o diretório de configuração do Nginx (`/etc/nginx/nginx.conf` em instalações Linux) ou mantenha-o junto ao `docker-compose.yml`.
 
 ```nginx
@@ -480,3 +586,56 @@ A implementação prioriza **baixo acoplamento**, **alta coesão** e **single re
 **Licença:** MIT  
 **Data de Entrega:** Março de 2026  
 **Disciplina:** Introdução à Arquitetura de Software
+
+---
+
+## 📦 Evidências
+
+Os comandos demonstrados ao longo do README servem como provas de funcionamento. Entre os principais estão:
+
+```bash
+# subir aplicação com proxy e balanceamento
+docker-compose up --build --scale app=2
+
+# testar rate limiting (retornar 429)
+for i in {1..20}; do curl -s -o /dev/null -w "%{http_code} \n" http://localhost; done
+
+# testar limite de payload (retornar 413)
+head -c 1500000 /dev/urandom > big.bin
+curl -i --data-binary @big.bin http://localhost
+
+# testar cache e microcache
+curl -I http://localhost/api/cursos; sleep 1; curl -I http://localhost/api/cursos
+
+# visualizar cache header
+curl -I http://localhost/api/cursos | grep -i X-Cache-Status
+
+# verificar gzip
+curl -I http://localhost/api/cursos -H 'Accept-Encoding: gzip'
+
+# verificar X-Request-ID
+curl -I http://localhost/api/cursos | grep -i X-Request-ID
+
+# forçar 404 / 50x
+curl -i http://localhost/naoencontre
+
+docker-compose stop app; curl -i http://localhost
+
+# autenticação básica
+curl -I http://localhost/swagger           # sem credenciais
+curl -I -u admin:secret http://localhost/swagger  # com credenciais
+
+# checar health check
+curl http://localhost/actuator/health
+```
+
+Você também pode inspecionar os logs do Nginx e da aplicação via:
+
+```bash
+docker-compose logs --follow nginx
+# e
+# (no backend) logs já aparecem no console com requestId
+```
+
+Capturas de tela podem ser feitas a partir desses comandos ou do navegador para
+completar a entrega.

@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8080/api';
+const API_URL = '/api'; // use same origin so port differences (80 vs 8080) don't break auth cookies or trigger CORS
 
 // Caches para dados
 let professoresCache = [];
