@@ -478,5 +478,5 @@ A implementação prioriza **baixo acoplamento**, **alta coesão** e **single re
 ---
 
 **Licença:** MIT  
-**Data de Entrega:** Janeiro de 2026  
+**Data de Entrega:** Março de 2026  
 **Disciplina:** Introdução à Arquitetura de Software
