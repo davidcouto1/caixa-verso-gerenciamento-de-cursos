@@ -578,6 +578,14 @@ src/
 ## 10. Conclusão
 
 ## 🗃️ Sessão distribuída e escalabilidade (Didático)
+> **Atenção:**
+> Para que o Spring Session JDBC funcione corretamente, é fundamental garantir que o schema das tabelas de sessão seja criado automaticamente no banco H2. Isso é feito adicionando a linha abaixo ao `application.properties`:
+>
+> ```properties
+> spring.datasource.schema=classpath:org/springframework/session/jdbc/schema-h2.sql
+> ```
+>
+> Sem isso, a aplicação apresentará erro de "Table SPRING_SESSION not found" e ficará unhealthy em ambiente Docker.
 
 Quando a aplicação é executada com múltiplas instâncias (ex: `docker-compose up --build --scale app=3`), cada container mantém sessões de usuário apenas em sua própria memória. Isso significa que, sem configuração extra, o login pode ser "perdido" ao alternar entre instâncias, pois cada uma não compartilha o estado de autenticação.
 
