@@ -201,6 +201,13 @@ mvn clean install
 mvn spring-boot:run
 ```
 
+> 💡 Alternativamente, toda a stack (aplicação + Nginx) pode ser inicializada com Docker Compose. O `Dockerfile` já usa um *multi-stage build* para compilar o artefato dentro de um contêiner Maven, assim não é necessário ter o Maven instalado localmente.
+
+```bash
+# gera a imagem da aplicação e sobe também o Nginx como reverso
+docker-compose up --build
+```
+
 4. **Acesse a aplicação:**
 - **Interface Web:** `http://localhost:8080` ⭐
 - **API REST:** `http://localhost:8080/api`
