@@ -8,6 +8,11 @@ services:
     # variável de ambiente para produção (exemplos)
     environment:
       - SPRING_PROFILES_ACTIVE=prod
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
   nginx:
     image: nginx:stable
     ports:

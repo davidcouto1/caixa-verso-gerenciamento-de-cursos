@@ -263,6 +263,39 @@ sudo systemctl restart nginx
 
 > O proxy permite receber requisições na porta 80, aplicar SSL/caching e repassá‑las à aplicação em 8080.
 
+### 🔁 Balanceamento de carga
+
+Com o Docker Compose é simples criar múltiplas réplicas do serviço e deixar o Nginx distribuir as requisições.
+
+1. Inicie os contêineres com escala, por exemplo três instâncias do app:
+
+```bash
+docker-compose up --build --scale app=3
+```
+
+2. O Nginx (já configurado com `resolver 127.0.0.11`) fará DNS round‑robin entre os IPs retornados pelo serviço `app`
+   e assim balanceará as requisições automaticamente.
+
+> Se não usar Docker, crie manualmente múltiplas instâncias da aplicação e liste-as em `upstream backend`.
+
+### 🩺 Health checks
+
+Além do balanceador, o contêiner da aplicação agora possui uma **verificação de saúde Docker** que consulta o endpoint `/actuator/health`. O Spring Boot expõe esse endpoint graças ao **Spring Boot Actuator** (dependência adicionada ao `pom.xml`).
+
+- O `docker-compose.yml` inclui:
+
+```yaml
+healthcheck:
+  test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+  interval: 30s
+  timeout: 10s
+  retries: 3
+```
+
+- A propriedade `management.endpoints.web.exposure.include=health,info` em `application.properties` garante que o serviço responda.
+
+Se uma instância ficar com a saúde ruim, o Docker marca o contêiner como `unhealthy` e o Nginx (graças a `max_fails`/`fail_timeout`) deixará de encaminhar requisições para ele, permitindo que o orquestrador reinicie automaticamente a unidade.
+
 ### 🔐 Autenticação e Controle de Acesso
 
 O sistema implementa **controle de acesso baseado em perfis** (RBAC) com Spring Security. Autenticação obrigatória para acessar as funcionalidades.
