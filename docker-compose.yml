@@ -10,6 +10,7 @@ services:
     # variável de ambiente para produção (exemplos)
     environment:
       - SPRING_PROFILES_ACTIVE=prod
+      - INSTANCE_ID=${INSTANCE_ID:-${HOSTNAME}}
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
       interval: 30s
