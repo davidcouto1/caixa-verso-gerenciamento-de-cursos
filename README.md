@@ -637,5 +637,3 @@ docker-compose logs --follow nginx
 # (no backend) logs já aparecem no console com requestId
 ```
 
-Capturas de tela podem ser feitas a partir desses comandos ou do navegador para
-completar a entrega.
