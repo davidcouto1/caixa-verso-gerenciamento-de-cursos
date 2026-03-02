@@ -172,7 +172,68 @@ O sistema utiliza o padrão **MVC (Model-View-Controller)** organizado em camada
 - Permissões diferentes por perfil
 - Autenticação obrigatória para operações sensíveis
 
-## 6. Instruções para Execução
+## 6. Infraestrutura, Escalabilidade e Sessão Distribuída
+
+### 6.1. Containerização e Orquestração
+
+O sistema é executado via Docker Compose, com três serviços principais:
+- **app**: instâncias do backend Spring Boot (Java 17)
+- **nginx**: proxy reverso e balanceador de carga
+- **db**: banco de dados PostgreSQL
+
+Exemplo de escala horizontal:
+```bash
+docker-compose up --build --scale app=3
+```
+O Nginx distribui as requisições entre múltiplas instâncias do app.
+
+### 6.2. Persistência de Sessão Distribuída (Spring Session JDBC + PostgreSQL)
+
+**Problema:**
+Por padrão, sessões HTTP são armazenadas em memória local. Isso impede o compartilhamento de sessão entre instâncias (ex: login feito em uma instância não é reconhecido em outra).
+
+**Solução:**
+- Utilização do [Spring Session JDBC](https://docs.spring.io/spring-session/reference/jdbc.html) para persistir sessões no PostgreSQL.
+- As tabelas `SPRING_SESSION` e `SPRING_SESSION_ATTRIBUTES` são criadas automaticamente ou via script SQL.
+- Todas as instâncias do app compartilham a mesma tabela de sessão, permitindo login único e logout global.
+
+**Configuração relevante:**
+```properties
+# application.properties
+spring.session.store-type=jdbc
+spring.session.jdbc.initialize-schema=always
+spring.datasource.url=jdbc:postgresql://db:5432/gerenciamento_cursos
+spring.datasource.username=postgres
+spring.datasource.password=postgres
+```
+
+**Infraestrutura:**
+- O serviço `app` depende do `db` e só inicia após o banco estar saudável (healthcheck).
+- O script `schema-postgresql.sql` pode ser usado para criar as tabelas manualmente, caso necessário.
+
+**Testando sessão distribuída:**
+1. Suba múltiplas instâncias:
+   ```bash
+   docker-compose up --build --scale app=3
+   ```
+2. Faça login via navegador ou curl.
+3. Acesse diferentes endpoints repetidamente (F5 ou múltiplas abas).
+4. Observe que a sessão é mantida mesmo alternando entre instâncias (veja logs com o campo `instance`).
+
+**Dicas de troubleshooting:**
+- Se as tabelas de sessão não forem criadas automaticamente, execute manualmente:
+  ```bash
+  docker cp src/main/resources/schema-postgresql.sql caixa-verso-gerenciamento-de-cursos-db-1:/schema-postgresql.sql
+  docker-compose exec db psql -U postgres -d gerenciamento_cursos -f /schema-postgresql.sql
+  ```
+- Verifique as tabelas no banco:
+  ```bash
+  docker-compose exec db psql -U postgres -d gerenciamento_cursos -c "\dt"
+  ```
+
+---
+
+## 7. Execução
 
 ### Pré-requisitos
 - **Docker** (e Docker Compose) – requisito principal para execução rápida
