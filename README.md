@@ -21,7 +21,7 @@ Desenvolver um sistema web que permita:
 **O projeto inclui:**
 - 🔧 **Backend:** API REST com Spring Boot
 - 🎨 **Frontend:** Interface web moderna em HTML/CSS/JavaScript
-- 💾 **Banco de Dados:** H2 em memória (desenvolvimento/testes)
+- 💾 **Banco de Dados:** PostgreSQL (produção e desenvolvimento via Docker)
 
 ## 3. Estilo Arquitetural Adotado
 
@@ -47,7 +47,7 @@ O sistema utiliza o padrão **MVC (Model-View-Controller)** organizado em camada
                │
 ┌──────────────▼──────────────────────┐
 │        Banco de Dados               │
-│      (H2 Database)                  │
+│   (PostgreSQL Database)             │
 └─────────────────────────────────────┘
 ```
 
@@ -121,18 +121,19 @@ O sistema utiliza o padrão **MVC (Model-View-Controller)** organizado em camada
 
 **Impacto:** Redução de código boilerplate mantendo controle sobre a arquitetura.
 
-#### 2. Banco de Dados H2
-**Decisão:** Usar banco de dados H2 em memória para persistência.
+
+#### 2. Banco de Dados PostgreSQL
+**Decisão:** Usar banco de dados PostgreSQL para persistência (produção e desenvolvimento).
 
 **Justificativa:**
 - Relacionamentos claros entre Curso, Aluno e Matrícula
 - ACID garante consistência em operações críticas (ex: limite de vagas)
 - Consultas complexas facilitadas por SQL
-- Configuração zero - não requer instalação externa
-- Console web integrado para visualização dos dados
-- Ideal para desenvolvimento, testes e demonstrações acadêmicas
+- Suporte robusto a concorrência e escalabilidade
+- Fácil integração com Docker e ambientes de produção reais
+- Ideal para ambientes escaláveis e demonstrações acadêmicas modernas
 
-**Impacto:** Integridade referencial garantida, facilita desenvolvimento e testes, elimina dependências externas.
+**Impacto:** Integridade referencial garantida, facilita desenvolvimento, testes e produção, elimina limitações do H2 para cenários distribuídos.
 
 #### 3. API REST (JSON)
 **Decisão:** Expor funcionalidades via API REST com respostas JSON.
@@ -242,7 +243,7 @@ spring.datasource.password=postgres
 
 ### Configuração do Banco de Dados
 
-O projeto utiliza **H2 Database em memória** durante desenvolvimento; nenhuma instalação é necessária e o banco é inicializado automaticamente pela aplicação. Em ambiente containerizado, a mesma configuração é usada sem ajustes adicionais.
+O projeto utiliza **PostgreSQL** tanto em desenvolvimento quanto em produção, via container Docker. O banco é inicializado automaticamente e compartilhado entre todas as instâncias do app, permitindo cenários de sessão distribuída e escalabilidade realista.
 
 ### Execução
 
@@ -290,10 +291,6 @@ mvn spring-boot:run
 4. **Acesse a aplicação via proxy:**
 - **Interface Web:** `http://localhost` ⭐
 - **API REST:** `http://localhost/api`
-- **Console H2:** `http://localhost/h2-console`
-  - JDBC URL: `jdbc:h2:mem:gerenciamento_cursos`
-  - Username: `sa`
-  - Password: *(deixe em branco)*
 
 > ⚠️ A porta 8080 da API não é exposta ao host; acessos diretos (por exemplo
 > `http://localhost:8080`) devem falhar, deixando claro que apenas o proxy serve
@@ -639,23 +636,15 @@ src/
 ## 10. Conclusão
 
 ## 🗃️ Sessão distribuída e escalabilidade (Didático)
-> **Atenção:**
-> Para que o Spring Session JDBC funcione corretamente, é fundamental garantir que o schema das tabelas de sessão seja criado automaticamente no banco H2. Isso é feito adicionando a linha abaixo ao `application.properties`:
->
-> ```properties
-> spring.datasource.schema=classpath:org/springframework/session/jdbc/schema-h2.sql
-> ```
->
-> Sem isso, a aplicação apresentará erro de "Table SPRING_SESSION not found" e ficará unhealthy em ambiente Docker.
 
-Quando a aplicação é executada com múltiplas instâncias (ex: `docker-compose up --build --scale app=3`), cada container mantém sessões de usuário apenas em sua própria memória. Isso significa que, sem configuração extra, o login pode ser "perdido" ao alternar entre instâncias, pois cada uma não compartilha o estado de autenticação.
+Quando a aplicação é executada com múltiplas instâncias (ex: `docker-compose up --build --scale app=3`), cada container manteria sessões de usuário apenas em sua própria memória. Isso significa que, sem configuração extra, o login pode ser "perdido" ao alternar entre instâncias, pois cada uma não compartilha o estado de autenticação.
 
 **Para resolver esse problema em ambientes escaláveis, é necessário usar um gerenciador de sessão distribuída**, como:
-- Spring Session com JDBC (banco relacional)
+- Spring Session com JDBC (banco relacional, ex: PostgreSQL)
 - Spring Session com Redis (cache distribuído)
 - Spring Session com Hazelcast (in-memory grid)
 
-Neste projeto, foi adotado o **Spring Session JDBC** usando o próprio banco H2, permitindo que todas as instâncias compartilhem as sessões de login. Assim, o usuário permanece autenticado mesmo com balanceamento de carga.
+Neste projeto, foi adotado o **Spring Session JDBC** usando o banco PostgreSQL, permitindo que todas as instâncias compartilhem as sessões de login. Assim, o usuário permanece autenticado mesmo com balanceamento de carga.
 
 > **Resumo didático:**
 > - Monolitos simples: sessão em memória (não escala)
